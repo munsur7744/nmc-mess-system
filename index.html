@@ -1,0 +1,2602 @@
+```html
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NMC Mess Management System</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter, Hind Siliguri & Dancing Script for Signature -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- html2pdf for generating PDF reports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<!-- Firebase SDKs & Realtime Database Setup -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, get, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAvF0ebQcrR8Zd-Z9_sx4y9lJU6MWIfkVs",
+            authDomain: "nmc-meal-cc6b3.firebaseapp.com",
+            databaseURL: "https://nmc-meal-cc6b3-default-rtdb.firebaseio.com/",
+            projectId: "nmc-meal-cc6b3",
+            storageBucket: "nmc-meal-cc6b3.firebasestorage.app",
+            messagingSenderId: "605574835209",
+            appId: "1:605574835209:web:35f8c53d80decffc115cd8",
+            measurementId: "G-XY1ZW8S9E9"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.firebaseDb = db;
+        window.firebaseRef = ref;
+        window.firebaseSet = set;
+        window.firebaseGet = get;
+        window.firebaseOnValue = onValue;
+        window.firebaseServerTimestamp = serverTimestamp;
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#FF6B00',
+                            darkOrange: '#CC5500',
+                            lightOrange: '#FF8533',
+                            black: '#121212',
+                            cardBg: '#1E1E1E',
+                            border: '#333333'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Hind Siliguri', 'Inter', 'sans-serif'],
+                        signature: ['Dancing Script', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0A0A0A;
+            color: #E0E0E0;
+            user-select: none;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121212;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF6B00;
+            border-radius: 4px;
+        }
+        .active-tab {
+            border-bottom: 3px solid #FF6B00;
+            color: #FF6B00;
+        }
+        
+        /* Styles for PDF Generation container */
+        .pdf-card {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        /* Shimmer Effect for Credit Card */
+        @keyframes shimmer {
+            0% { transform: translateX(-150%) rotate(25deg); }
+            100% { transform: translateX(150%) rotate(25deg); }
+        }
+        .shimmer-bg::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                60deg,
+                transparent 30%,
+                rgba(255, 215, 0, 0.25) 50%,
+                transparent 70%
+            );
+            animation: shimmer 4s infinite linear;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased pb-20 md:pb-6">
+
+    <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col justify-between bg-black text-white relative shadow-2xl border-x border-gray-800">
+        
+        <!-- Header -->
+        <header class="bg-brand-cardBg border-b border-brand-border p-4 sticky top-0 z-40 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-brand-orange text-black flex items-center justify-center font-bold text-xl shadow-lg">
+                    <i class="fa-solid fa-utensils"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight text-white">NMC Mess Portal</h1>
+                    <p class="text-xs text-gray-400" id="headerSubtext">নোয়াখালী মেডিকেল কলেজ</p>
+                </div>
+            </div>
+            <div id="userInfoHeader" class="hidden flex items-center gap-2">
+                <span id="roleBadge" class="text-[10px] bg-brand-orange/20 text-brand-orange border border-brand-orange/40 px-2 py-0.5 rounded-full font-semibold">
+                    মেম্বার
+                </span>
+                <button onclick="window.appInstance && window.appInstance.logout()" class="text-gray-400 hover:text-red-400 p-1 text-sm" title="লগআউট">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-4 overflow-y-auto" id="mainContainer">
+            <!-- Dynamic Content Injected Here -->
+        </main>
+
+        <!-- Navigation Bar -->
+        <nav id="bottomNav" class="hidden bg-brand-cardBg border border-brand-border rounded-2xl fixed bottom-3 left-1/2 -translate-x-1/2 max-w-[calc(100%-2rem)] w-full max-w-md z-40 flex justify-around py-2 px-1 shadow-2xl">
+            <button onclick="window.appInstance.navigate('home')" id="nav-home" class="flex flex-col items-center gap-1 text-xs text-gray-400 active-tab py-1">
+                <i class="fa-solid fa-house text-lg"></i>
+                <span>হোম</span>
+            </button>
+            <button onclick="window.appInstance.navigate('meal')" id="nav-meal" class="flex flex-col items-center gap-1 text-xs text-gray-400 py-1">
+                <i class="fa-solid fa-calendar-check text-lg"></i>
+                <span>মিল স্ট্যাটাস</span>
+            </button>
+            <button onclick="window.appInstance.navigate('peripheral')" id="nav-peripheral" class="hidden flex flex-col items-center gap-1 text-xs text-gray-400 py-1">
+                <i class="fa-solid fa-building text-lg"></i>
+                <span>মেস মেম্বার্স</span>
+            </button>
+            <button onclick="window.appInstance.navigate('notices')" id="nav-notices" class="flex flex-col items-center gap-1 text-xs text-gray-400 py-1 relative">
+                <i class="fa-solid fa-bell text-lg"></i>
+                <span>নোটিশ</span>
+                <span id="noticeBadge" class="hidden absolute top-0 right-3 w-2.5 h-2.5 rounded-full bg-brand-orange ring-2 ring-black"></span>
+            </button>
+            <button onclick="window.appInstance.navigate('pdf')" id="nav-pdf" class="hidden flex flex-col items-center gap-1 text-xs text-gray-400 py-1">
+                <i class="fa-solid fa-file-pdf text-lg"></i>
+                <span>পিডিএফ রিপোর্ট</span>
+            </button>
+            <button onclick="window.appInstance.navigate('guide')" id="nav-guide" class="flex flex-col items-center gap-1 text-xs text-gray-400 py-1">
+                <i class="fa-solid fa-circle-info text-lg"></i>
+                <span>গাইডলাইন</span>
+            </button>
+        </nav>
+
+        <!-- Toast Notifications (Increased Z-Index to z-[100] so it remains on top of all modals) -->
+        <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 bg-brand-orange text-black font-semibold text-sm px-4 py-2 rounded-lg shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none z-[100] max-w-[90%] text-center">
+            নোটিফিকেশন
+        </div>
+
+        <!-- Global Data Loading Screen Overlay -->
+        <div id="appLoadingSpinner" class="fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center gap-3">
+            <div class="w-12 h-12 border-4 border-brand-orange border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-xs text-brand-orange font-semibold tracking-wider animate-pulse">অনুগ্রহ করে অপেক্ষা করুন, ডাটা লোড হচ্ছে...</p>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        const DB_KEY = "NMC_MESS_APP_DATA_V3";
+        const SECRET_ADMIN = "01405996494";
+
+        const defaultData = {
+            users: [
+                { id: "1", name: "Anamul Haque", phone: "01700000001", gender: "Male", batch: 18, roll: 1, floor: 2, room: 201, fb: "https://facebook.com" },
+                { id: "2", name: "Tanvir Ahmed", phone: "01700000002", gender: "Male", batch: 18, roll: 2, floor: 2, room: 202, fb: "" },
+                { id: "3", name: "Nadia Islam", phone: "01700000003", gender: "Female", batch: 18, roll: 3, floor: 1, room: 101, fb: "" },
+                { id: "4", name: "Sabbir Hossain", phone: "01700000004", gender: "Male", batch: 18, roll: 4, floor: 3, room: 301, fb: "" },
+                { id: "5", name: "Sadia Rahman", phone: "01700000005", gender: "Female", batch: 18, roll: 8, floor: 1, room: 102, fb: "" },
+                { id: "6", name: "Rahim Chowdhury", phone: "01700000006", gender: "Male", batch: 14, roll: 5, floor: 4, room: 405, fb: "" },
+            ],
+            currentPeripheralBatchMale: 18,
+            currentPeripheralBatchFemale: 18,
+            currentCentralBatch: 14,
+            centralUserId: "6",
+            handoverPeripheralMale: [],
+            handoverPeripheralFemale: [],
+            handoverCentral: null,
+            mealRates: {
+                firstHalf: 370,
+                secondHalf: 400,
+                fullMeal: 700,
+                standaloneFeast: 150,
+                feastDiscount: 70
+            },
+            meals: {
+                "1": { firstHalf: true, secondHalf: true, feast: false, paidFirst: true, paidSecond: true, paidFeast: false, refundPaid: false, note: "বকেয়া নেই" },
+                "2": { firstHalf: true, secondHalf: false, feast: false, paidFirst: false, paidSecond: false, paidFeast: false, refundPaid: false, note: "" },
+                "3": { firstHalf: false, secondHalf: true, feast: true, paidFirst: true, paidSecond: true, paidFeast: true, refundPaid: false, note: "পরিশোধিত" },
+            },
+            systemSuspended: false,
+            centralNotices: "",
+            noticeUpdatedTime: 0,
+            lastThursdayResetTimestamp: 0,
+            reports: []
+        };
+
+        class MessApp {
+            constructor() {
+                this.db = this.loadData();
+                this.currentUser = null;
+                this.currentTab = 'home';
+                
+                this.memberFilters = {
+                    batch: 'ALL',
+                    floor: 'ALL',
+                    payment: 'ALL',
+                    note: 'ALL'
+                };
+
+                this.pdfBatchFilters = ['ALL'];
+                this.pdfFloorFilters = ['ALL'];
+                this.pdfTargetGender = 'Male';
+
+                this.checkAndPerformWeeklyReset();
+                this.init();
+            }
+
+            loadData() {
+                // ফায়ারবেস থেকে রিয়েলটাইম ডাটা লোড করার জন্য ইনিশিয়াল ডাটা রিটার্ন করা হচ্ছে
+                if (window.firebaseDb) {
+                    const dbRef = window.firebaseRef(window.firebaseDb, 'nmc_mess_data');
+                    window.firebaseOnValue(dbRef, (snapshot) => {
+                        const val = snapshot.val();
+                        if (val) {
+                            this.db = val;
+                            // ডাটা আপডেট হলে অ্যাপ রি-রেন্ডার করবে
+                            if (window.appInstance && typeof window.appInstance.renderApp === 'function') {
+                                window.appInstance.renderApp();
+                            }
+                        } else {
+                            // যদি ফায়ারবেসে ডাটা না থাকে, তবে ডিফল্ট ডাটা সেভ করে দিবে
+                            window.firebaseSet(dbRef, defaultData);
+                        }
+                    });
+                }
+                return defaultData;
+            }
+
+            saveData() {
+                try {
+                    if (window.firebaseDb) {
+                        const dbRef = window.firebaseRef(window.firebaseDb, 'nmc_mess_data');
+                        window.firebaseSet(dbRef, this.db).catch(err => {
+                            console.error("Firebase save error:", err);
+                        });
+                    }
+                } catch(e) {
+                    console.error("Database save error:", e);
+                }
+            }
+
+            // Calculates the timestamp of the most recent Thursday 7:00 PM (19:00) using server or stable time
+            getLatestThursdayResetTime(referenceDate = new Date()) {
+                const now = new Date(referenceDate);
+                const day = now.getDay(); // 0: Sun, 1: Mon, ... 4: Thu, 5: Fri, 6: Sat
+                const hours = now.getHours();
+
+                const target = new Date(now);
+                target.setMinutes(0, 0, 0);
+
+                let daysBack = (day + 7 - 4) % 7;
+                if (daysBack === 0 && hours < 19) {
+                    daysBack = 7; 
+                }
+
+                target.setDate(now.getDate() - daysBack);
+                target.setHours(19, 0, 0, 0);
+                return target.getTime();
+            }
+
+            // Checks and resets meals, payments, and notes every Thursday at 7:00 PM
+            checkAndPerformWeeklyReset() {
+                // ফায়ারবেসের সার্ভার টাইম বা নির্ভরযোগ্য বর্তমান সময় ব্যবহার করা
+                const nowTimestamp = Date.now();
+                const latestThurs7PM = this.getLatestThursdayResetTime(new Date(nowTimestamp));
+
+                if (!this.db.lastThursdayResetTimestamp || this.db.lastThursdayResetTimestamp < latestThurs7PM) {
+                    Object.keys(this.db.meals).forEach(userId => {
+                        this.db.meals[userId] = {
+                            firstHalf: false,
+                            secondHalf: false,
+                            feast: false,
+                            paidFirst: false,
+                            paidSecond: false,
+                            paidFeast: false,
+                            refundPaid: false,
+                            note: ""
+                        };
+                    });
+
+                    this.db.lastThursdayResetTimestamp = latestThurs7PM;
+                    this.saveData();
+                }
+            }
+
+            // Checks if a meal type can be changed by regular students based on current schedule
+            isMealToggleAllowed(mealType) {
+                const roles = this.getRoles();
+                // Peripherals and Secret Admins can override/toggle anytime
+                if (roles.isPeripheral || roles.isSecret) return true;
+
+                const now = new Date();
+                const day = now.getDay(); // 0: Sun, 1: Mon, 2: Tue, 3: Wed, 4: Thu, 5: Fri, 6: Sat
+                const hours = now.getHours();
+                const minutes = now.getMinutes();
+                const totalMinutes = hours * 60 + minutes;
+
+                if (mealType === 'feast') {
+                    // Thursday 10:00 AM (600 mins) to 6:00 PM (1080 mins)
+                    if (day === 4 && totalMinutes >= 600 && totalMinutes <= 1080) {
+                        return true;
+                    }
+                    return false;
+                }
+
+                if (mealType === 'firstHalf' || mealType === 'full') {
+                    // Thursday 7:30 PM (1170 mins) to 10:00 PM (1320 mins)
+                    if (day === 4 && totalMinutes >= 1170 && totalMinutes <= 1320) {
+                        return true;
+                    }
+                    return false;
+                }
+
+                if (mealType === 'secondHalf') {
+                    // Monday 10:00 AM (600 mins) to 10:00 PM (1320 mins)
+                    if (day === 1 && totalMinutes >= 600 && totalMinutes <= 1320) {
+                        return true;
+                    }
+                    return false;
+                }
+
+                return false;
+            }
+
+            calculateUserMealTotal(m) {
+                if (!m) return 0;
+                const r = this.db.mealRates;
+                let total = 0;
+
+                const hasFirst = !!m.firstHalf;
+                const hasSecond = !!m.secondHalf;
+                const hasFeast = (m.feast === true);
+
+                if (hasFirst && hasSecond) {
+                    total = r.fullMeal;
+                    if (!hasFeast) {
+                        total -= r.feastDiscount;
+                    }
+                } else if (hasFirst && !hasSecond) {
+                    total = r.firstHalf;
+                    if (hasFeast) {
+                        total += r.standaloneFeast;
+                    }
+                } else if (!hasFirst && hasSecond) {
+                    total = r.secondHalf;
+                    if (!hasFeast) {
+                        total -= r.feastDiscount;
+                    }
+                } else {
+                    if (hasFeast) {
+                        total = r.standaloneFeast;
+                    }
+                }
+
+                return Math.max(0, total);
+            }
+
+            getUserRefundDetails(m) {
+                if (!m) return { eligible: false, amount: 0, isCleared: false };
+                const r = this.db.mealRates;
+                
+                const hasFirst = !!m.firstHalf;
+                const hasSecond = !!m.secondHalf;
+                const hasFeast = (m.feast === true);
+
+                const feastOffEligible = (!hasFeast) && ( (hasFirst && hasSecond) || (!hasFirst && hasSecond) );
+                
+                if (!feastOffEligible) {
+                    return { eligible: false, amount: 0, isCleared: false };
+                }
+
+                const paidFullOrSecond = (hasFirst && hasSecond && m.paidFirst && m.paidSecond) || (!hasFirst && hasSecond && m.paidSecond);
+
+                if (paidFullOrSecond) {
+                    return {
+                        eligible: true,
+                        amount: r.feastDiscount,
+                        isCleared: !!m.refundPaid
+                    };
+                }
+
+                return { eligible: false, amount: 0, isCleared: false };
+            }
+
+            calculateUserDue(m) {
+                if (!m) return 0;
+                const totalCost = this.calculateUserMealTotal(m);
+                if (totalCost === 0) return 0;
+
+                const r = this.db.mealRates;
+                let paidAmount = 0;
+                const hasFirst = !!m.firstHalf;
+                const hasSecond = !!m.secondHalf;
+                const hasFeast = (m.feast === true);
+
+                if (hasFirst && hasSecond) {
+                    if (m.paidFirst && m.paidSecond) {
+                        paidAmount += (!hasFeast) ? (r.fullMeal - r.feastDiscount) : r.fullMeal;
+                    } else {
+                        if (m.paidFirst) paidAmount += r.firstHalf;
+                        if (m.paidSecond) paidAmount += (r.fullMeal - r.firstHalf);
+                    }
+                } 
+                else if (hasFirst && !hasSecond) {
+                    if (m.paidFirst) paidAmount += r.firstHalf;
+                    if (hasFeast && m.paidFeast) paidAmount += r.standaloneFeast;
+                } 
+                else if (!hasFirst && hasSecond) {
+                    if (m.paidSecond) paidAmount += (!hasFeast) ? (r.secondHalf - r.feastDiscount) : r.secondHalf;
+                } 
+                else {
+                    if (hasFeast && m.paidFeast) paidAmount += r.standaloneFeast;
+                }
+
+                const due = totalCost - paidAmount;
+                return Math.max(0, due);
+            }
+
+            init() {
+                setTimeout(() => {
+                    const loader = document.getElementById('appLoadingSpinner');
+                    if (loader) loader.classList.add('hidden');
+                    this.checkAutoLogin();
+                }, 300);
+            }
+
+            showToast(msg) {
+                const toast = document.getElementById('toast');
+                if (!toast) return;
+                toast.innerText = msg;
+                toast.classList.remove('opacity-0');
+                setTimeout(() => toast.classList.add('opacity-0'), 3000);
+            }
+
+            checkAutoLogin() {
+                try {
+                    const sessionUser = sessionStorage.getItem("NMC_SESSION_USER");
+                    if (sessionUser) {
+                        this.currentUser = JSON.parse(sessionUser);
+                        this.renderApp();
+                    } else {
+                        this.renderLogin();
+                    }
+                } catch(e) {
+                    this.renderLogin();
+                }
+            }
+
+            login(phone) {
+                phone = phone.trim();
+                if (phone === SECRET_ADMIN) {
+                    this.currentUser = {
+                        id: "SECRET_ADMIN",
+                        name: "Super Admin",
+                        phone: SECRET_ADMIN,
+                        gender: "Male",
+                        batch: 0,
+                        isSecretAdmin: true
+                    };
+                    sessionStorage.setItem("NMC_SESSION_USER", JSON.stringify(this.currentUser));
+                    this.showToast("সিক্রেট হেড একাউন্টে সফলভাবে লগইন হয়েছে!");
+                    this.renderApp();
+                    return;
+                }
+
+                const user = this.db.users.find(u => u.phone === phone);
+                if (user) {
+                    this.currentUser = user;
+                    sessionStorage.setItem("NMC_SESSION_USER", JSON.stringify(this.currentUser));
+                    this.showToast(`স্বাগতম, ${user.name}`);
+                    this.renderApp();
+                } else {
+                    this.showToast("নম্বরটি সিস্টেমে পাওয়া যায়নি! রেজিস্ট্রেশন করুন।");
+                }
+            }
+
+            register(userData) {
+                const numRegex = /^[0-9]+$/;
+                if (!numRegex.test(userData.batch) || !numRegex.test(userData.roll) || !numRegex.test(userData.floor) || !numRegex.test(userData.room)) {
+                    this.showToast("ব্যাচ, রোল, ফ্লোর এবং রুম নম্বর শুধুমাত্র ইংরেজী সংখ্যায় লিখুন!");
+                    return false;
+                }
+
+                if (this.db.users.some(u => u.phone === userData.phone)) {
+                    this.showToast("এই ফোন নম্বর দিয়ে ইতিমধ্যে একাউন্ট রয়েছে!");
+                    return false;
+                }
+
+                const newUser = {
+                    id: Date.now().toString(),
+                    name: userData.name.trim(),
+                    phone: userData.phone.trim(),
+                    gender: userData.gender,
+                    batch: parseInt(userData.batch),
+                    roll: parseInt(userData.roll),
+                    floor: parseInt(userData.floor),
+                    room: parseInt(userData.room),
+                    fb: userData.fb ? userData.fb.trim() : ""
+                };
+
+                this.db.users.push(newUser);
+                this.saveData();
+                this.currentUser = newUser;
+                sessionStorage.setItem("NMC_SESSION_USER", JSON.stringify(this.currentUser));
+                this.showToast("একাউন্ট সফলভাবে তৈরি হয়েছে!");
+                this.renderApp();
+                return true;
+            }
+
+            logout() {
+                sessionStorage.removeItem("NMC_SESSION_USER");
+                this.currentUser = null;
+                document.getElementById('bottomNav').classList.add('hidden');
+                document.getElementById('userInfoHeader').classList.add('hidden');
+                this.renderLogin();
+            }
+
+            getRoles() {
+                if (this.currentUser && this.currentUser.isSecretAdmin) {
+                    return { isCentral: true, isPeripheral: true, isSecret: true };
+                }
+
+                const user = this.currentUser;
+                if (!user) return { isCentral: false, isPeripheral: false, isSecret: false };
+
+                let isCentral = false;
+                if (this.db.handoverCentral) {
+                    isCentral = (this.db.handoverCentral === user.id);
+                } else {
+                    isCentral = (user.id === this.db.centralUserId) || (user.batch === this.db.currentCentralBatch && user.gender === "Male" && user.roll === 1);
+                }
+
+                let isPeripheral = false;
+                const currentBatch = user.gender === "Male" ? this.db.currentPeripheralBatchMale : this.db.currentPeripheralBatchFemale;
+                
+                if (user.batch === currentBatch) {
+                    const sameGender = this.db.users
+                        .filter(u => u.batch === currentBatch && u.gender === user.gender)
+                        .sort((a,b) => a.roll - b.roll);
+                    
+                    const activePeripherals = sameGender.slice(0, 2).map(u => u.id);
+
+                    if (user.gender === "Male" && this.db.handoverPeripheralMale && this.db.handoverPeripheralMale.length > 0) {
+                        isPeripheral = this.db.handoverPeripheralMale.includes(user.id);
+                    } else if (user.gender === "Female" && this.db.handoverPeripheralFemale && this.db.handoverPeripheralFemale.length > 0) {
+                        isPeripheral = this.db.handoverPeripheralFemale.includes(user.id);
+                    } else {
+                        isPeripheral = activePeripherals.includes(user.id);
+                    }
+                }
+
+                return { isCentral, isPeripheral, isSecret: false };
+            }
+
+            navigate(tab) {
+                this.currentTab = tab;
+                document.querySelectorAll('#bottomNav button').forEach(btn => btn.classList.remove('active-tab'));
+                const activeBtn = document.getElementById(`nav-${tab}`);
+                if (activeBtn) activeBtn.classList.add('active-tab');
+
+                if (tab === 'notices') {
+                    localStorage.setItem('NMC_LAST_READ_NOTICE', (this.db.noticeUpdatedTime || 0).toString());
+                }
+
+                this.renderApp();
+            }
+
+            renderApp() {
+                this.checkAndPerformWeeklyReset();
+
+                document.getElementById('bottomNav').classList.remove('hidden');
+                document.getElementById('userInfoHeader').classList.remove('hidden');
+                
+                const roles = this.getRoles();
+                const badge = document.getElementById('roleBadge');
+                if (roles.isCentral) badge.innerText = "সেন্ট্রাল";
+                else if (roles.isPeripheral) badge.innerText = "পেরিফেরাল";
+                else badge.innerText = `ব্যাচ ${this.currentUser.batch || 'এডমিন'}`;
+
+                const navPeripheral = document.getElementById('nav-peripheral');
+                const navNotices = document.getElementById('nav-notices');
+                const navPdf = document.getElementById('nav-pdf');
+                const noticeBadge = document.getElementById('noticeBadge');
+
+                if (roles.isCentral || roles.isPeripheral || roles.isSecret) {
+                    navPeripheral.classList.remove('hidden');
+                    navPdf.classList.remove('hidden');
+                } else {
+                    navPeripheral.classList.add('hidden');
+                    navPdf.classList.add('hidden');
+                }
+
+                navNotices.classList.remove('hidden');
+                const lastRead = parseInt(localStorage.getItem('NMC_LAST_READ_NOTICE') || '0');
+                const hasUnreadNotice = !!(this.db.centralNotices && this.db.centralNotices.trim().length > 0 && (this.db.noticeUpdatedTime || 0) > lastRead);
+                
+                if (hasUnreadNotice) {
+                    noticeBadge.classList.remove('hidden');
+                } else {
+                    noticeBadge.classList.add('hidden');
+                }
+
+                const main = document.getElementById('mainContainer');
+                main.innerHTML = "";
+
+                if (this.db.systemSuspended && !roles.isCentral && !roles.isSecret) {
+                    main.innerHTML = `
+                        <div class="bg-red-950/40 border border-red-600/50 p-6 rounded-2xl text-center my-10">
+                            <i class="fa-solid fa-triangle-exclamation text-4xl text-red-500 mb-3"></i>
+                            <h2 class="text-xl font-bold text-red-400">মিল সিস্টেম স্থগিত রয়েছে</h2>
+                            <p class="text-sm text-gray-300 mt-2">সেন্ট্রাল থেকে সাময়িকভাবে মেসের সমস্ত মিল কার্যক্রম স্থগিত রাখা হয়েছে। বিস্তারিত জানতে সেন্ট্রাল ভাইয়ার সাথে যোগাযোগ করুন।</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                switch (this.currentTab) {
+                    case 'home':
+                        this.renderHome(main);
+                        break;
+                    case 'meal':
+                        this.renderMealStatus(main);
+                        break;
+                    case 'peripheral':
+                        if (roles.isCentral || roles.isPeripheral || roles.isSecret) {
+                            this.renderMembersView(main);
+                        } else {
+                            this.navigate('home');
+                        }
+                        break;
+                    case 'notices':
+                        this.renderNoticesView(main);
+                        break;
+                    case 'pdf':
+                        if (roles.isCentral || roles.isPeripheral || roles.isSecret) {
+                            this.renderPdfView(main);
+                        } else {
+                            this.navigate('home');
+                        }
+                        break;
+                    case 'guide':
+                        this.renderGuide(main);
+                        break;
+                }
+            }
+
+            renderLogin() {
+                const main = document.getElementById('mainContainer');
+                main.innerHTML = `
+                    <div class="flex flex-col justify-center min-h-[75vh]">
+                        <div class="text-center mb-6">
+                            <h2 class="text-2xl font-bold text-brand-orange">লগইন বা রেজিস্টার করুন</h2>
+                            <p class="text-xs text-gray-400 mt-1">মেডিকেল কলেজ মিল ম্যানেজমেন্ট অ্যাপ</p>
+                        </div>
+
+                        <div class="bg-brand-cardBg p-5 rounded-2xl border border-brand-border shadow-xl space-y-4">
+                            <div class="flex border-b border-gray-700 pb-3">
+                                <button id="loginTabBtn" onclick="window.appInstance.toggleAuthForm('login')" class="w-1/2 py-2 text-center font-semibold text-brand-orange border-b-2 border-brand-orange">লগইন</button>
+                                <button id="regTabBtn" onclick="window.appInstance.toggleAuthForm('reg')" class="w-1/2 py-2 text-center font-semibold text-gray-400">রেজিস্ট্রেশন</button>
+                            </div>
+
+                            <form id="loginForm" onsubmit="event.preventDefault(); window.appInstance.login(this.phone.value)" class="space-y-4">
+                                <div>
+                                    <label class="text-xs text-gray-300 block mb-1">ফোন নম্বর (ইংরেজিতে)</label>
+                                    <input type="text" name="phone" required placeholder="017XXXXXXXX" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-black border border-gray-700 rounded-xl p-3 text-white focus:border-brand-orange focus:outline-none">
+                                </div>
+                                <button type="submit" class="w-full bg-brand-orange text-black font-bold py-3 rounded-xl hover:bg-brand-lightOrange transition">
+                                    প্রবেশ করুন
+                                </button>
+                            </form>
+
+                            <form id="regForm" onsubmit="event.preventDefault(); window.appInstance.handleRegSubmit(this)" class="hidden space-y-3 text-sm">
+                                <p class="text-[11px] text-amber-400 bg-amber-950/30 p-2 rounded-lg border border-amber-800">
+                                    <i class="fa-solid fa-circle-info mr-1"></i> নির্দেশাবলী: ব্যাচ, রোল, ফ্লোর এবং রুম নম্বর শুধুমাত্র ইংরেজি সংখ্যায় লিখুন।
+                                </p>
+                                <div>
+                                    <label class="text-xs text-gray-300 block mb-1">নাম (English)</label>
+                                    <input type="text" name="name" required placeholder="Full Name" class="w-full bg-black border border-gray-700 rounded-xl p-2.5 text-white focus:border-brand-orange focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-300 block mb-1">ফোন নম্বর (Login ID)</label>
+                                    <input type="text" name="phone" required placeholder="017XXXXXXXX" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-black border border-gray-700 rounded-xl p-2.5 text-white focus:border-brand-orange focus:outline-none">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-xs text-gray-300 block mb-1">জেন্ডার</label>
+                                        <select name="gender" class="w-full bg-black border border-gray-700 rounded-xl p-2.5 text-white focus:border-brand-orange focus:outline-none">
+                                            <option value="Male">ছেলে (Male)</option>
+                                            <option value="Female">মেয়ে (Female)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-gray-300 block mb-1">ব্যাচ (যেমন: 18)</label>
+                                        <input type="text" name="batch" required placeholder="18" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-black border border-gray-700 rounded-xl p-2.5 text-white focus:border-brand-orange focus:outline-none">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div>
+                                        <label class="text-xs text-gray-300 block mb-1">রোল (Roll)</label>
+                                        <input type="text" name="roll" required placeholder="12" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-black border border-gray-700 rounded-xl p-2.5 text-white focus:border-brand-orange focus:outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-gray-300 block mb-1">ফ্লোর (Floor)</label>
+                                        <input type="text" name="floor" required placeholder="2" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-black border border-gray-700 rounded-xl p-2.5 text-white focus:border-brand-orange focus:outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-gray-300 block mb-1">রুম (Room)</label>
+                                        <input type="text" name="room" required placeholder="204" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-black border border-gray-700 rounded-xl p-2.5 text-white focus:border-brand-orange focus:outline-none">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-300 block mb-1">ফেসবুক প্রোফাইল লিংক (ঐচ্ছিক)</label>
+                                    <input type="url" name="fb" placeholder="https://facebook.com/username" class="w-full bg-black border border-gray-700 rounded-xl p-2.5 text-white focus:border-brand-orange focus:outline-none">
+                                </div>
+                                <button type="submit" class="w-full bg-brand-orange text-black font-bold py-3 rounded-xl hover:bg-brand-lightOrange transition">
+                                    রেজিস্ট্রেশন নিশ্চিত করুন
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            }
+
+            toggleAuthForm(type) {
+                const loginForm = document.getElementById('loginForm');
+                const regForm = document.getElementById('regForm');
+                const loginBtn = document.getElementById('loginTabBtn');
+                const regBtn = document.getElementById('regTabBtn');
+
+                if (type === 'login') {
+                    loginForm.classList.remove('hidden');
+                    regForm.classList.add('hidden');
+                    loginBtn.className = "w-1/2 py-2 text-center font-semibold text-brand-orange border-b-2 border-brand-orange";
+                    regBtn.className = "w-1/2 py-2 text-center font-semibold text-gray-400";
+                } else {
+                    loginForm.classList.add('hidden');
+                    regForm.classList.remove('hidden');
+                    regBtn.className = "w-1/2 py-2 text-center font-semibold text-brand-orange border-b-2 border-brand-orange";
+                    loginBtn.className = "w-1/2 py-2 text-center font-semibold text-gray-400";
+                }
+            }
+
+            handleRegSubmit(form) {
+                const data = {
+                    name: form.name.value,
+                    phone: form.phone.value,
+                    gender: form.gender.value,
+                    batch: form.batch.value,
+                    roll: form.roll.value,
+                    floor: form.floor.value,
+                    room: form.room.value,
+                    fb: form.fb.value
+                };
+                this.register(data);
+            }
+
+            renderHome(container) {
+                const roles = this.getRoles();
+                const u = this.currentUser;
+
+                let suspendedAlert = "";
+                if (this.db.systemSuspended) {
+                    suspendedAlert = `
+                        <div class="bg-red-950/60 border border-red-600/70 p-3 rounded-xl mb-4 text-red-200 text-xs flex items-center gap-2">
+                            <i class="fa-solid fa-circle-exclamation text-red-400 text-lg"></i>
+                            <div>
+                                <span class="font-bold block text-red-400">সিস্টেম স্থগিত রয়েছে</span>
+                                <span>সাধারণ ইউজাররা বর্তমানে অ্যাপ ব্যবহার করতে পারছে না।</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                let noticeHtml = "";
+                const lastDismissed = parseInt(localStorage.getItem('NMC_DISMISSED_NOTICE_TIME') || '0');
+                const isNoticeNew = (this.db.noticeUpdatedTime || 0) > lastDismissed;
+
+                if (this.db.centralNotices && this.db.centralNotices.trim().length > 0 && isNoticeNew) {
+                    noticeHtml = `
+                        <div id="noticeAlertBanner" class="bg-brand-orange/15 border border-brand-orange p-4 rounded-xl mb-4 text-white text-sm shadow-xl relative animate-pulse">
+                            <div class="flex items-center justify-between font-bold mb-1 text-brand-orange">
+                                <span class="flex items-center gap-2">
+                                    <i class="fa-solid fa-bell text-lg"></i> নতুন সেন্ট্রাল নোটিশ!
+                                </span>
+                                <button onclick="window.appInstance.dismissNoticeBanner()" class="text-gray-400 hover:text-white p-1">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <p class="leading-relaxed text-gray-200 text-xs mt-1">${this.db.centralNotices}</p>
+                        </div>
+                    `;
+                }
+
+                const rates = this.db.mealRates;
+
+                container.innerHTML = `
+                    ${suspendedAlert}
+                    ${noticeHtml}
+
+                    <div class="bg-brand-cardBg border border-brand-border rounded-2xl p-4 mb-4 relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 opacity-10 text-brand-orange">
+                            <i class="fa-solid fa-stethoscope text-8xl"></i>
+                        </div>
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">${u.name}</h3>
+                                <p class="text-xs text-gray-400">ব্যাচ: ${u.batch} | রোল: ${u.roll} | ফ্লোর: ${u.floor} | রুম: ${u.room}</p>
+                            </div>
+                            <button onclick="window.appInstance.editProfileModal()" class="text-xs bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-lg text-gray-300 hover:text-white">
+                                <i class="fa-solid fa-pen-to-square mr-1"></i> এডিট
+                            </button>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-gray-800 flex justify-between text-xs text-gray-300">
+                            <span>ফোন: ${u.phone}</span>
+                            ${u.fb ? `<a href="${u.fb}" target="_blank" class="text-blue-400 hover:underline"><i class="fa-brands fa-facebook mr-1"></i> ফেসবুক</a>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2.5 mb-4">
+                        <div class="bg-brand-cardBg border border-brand-border p-3 rounded-xl text-center">
+                            <span class="text-[11px] text-gray-400 block">Full Meal (1st+2nd)</span>
+                            <div class="text-base font-bold text-brand-orange">৳ ${rates.fullMeal}</div>
+                        </div>
+                        <div class="bg-brand-cardBg border border-brand-border p-3 rounded-xl text-center">
+                            <span class="text-[11px] text-gray-400 block">1st Half Only</span>
+                            <div class="text-base font-bold text-brand-orange">৳ ${rates.firstHalf}</div>
+                        </div>
+                        <div class="bg-brand-cardBg border border-brand-border p-3 rounded-xl text-center">
+                            <span class="text-[11px] text-gray-400 block">2nd Half Only</span>
+                            <div class="text-base font-bold text-brand-orange">৳ ${rates.secondHalf}</div>
+                        </div>
+                        <div class="bg-brand-cardBg border border-brand-border p-3 rounded-xl text-center">
+                            <span class="text-[11px] text-gray-400 block">Feast Only / Discount</span>
+                            <div class="text-base font-bold text-emerald-400">৳ ${rates.standaloneFeast} <span class="text-[10px] text-gray-400">(-৳${rates.feastDiscount})</span></div>
+                        </div>
+                    </div>
+
+                    ${this.getRunningAuthorityContactsHtml()}
+
+                    ${roles.isCentral || roles.isSecret ? this.getCentralControlsHtml() : ''}
+                    ${(roles.isCentral || roles.isPeripheral || roles.isSecret) ? this.getMessSummaryHtml() : ''}
+                `;
+            }
+
+            getRunningAuthorityContactsHtml() {
+                const u = this.currentUser;
+                const isMale = u ? u.gender === 'Male' : true;
+
+                let centralUser = null;
+                if (this.db.handoverCentral) {
+                    centralUser = this.db.users.find(x => x.id === this.db.handoverCentral);
+                }
+                if (!centralUser) {
+                    centralUser = this.db.users.find(x => x.id === this.db.centralUserId) ||
+                                  this.db.users.find(x => x.batch === this.db.currentCentralBatch && x.gender === "Male" && x.roll === 1);
+                }
+
+                let peripheralUsers = [];
+                const curBatch = isMale ? this.db.currentPeripheralBatchMale : this.db.currentPeripheralBatchFemale;
+                const handoverList = isMale ? this.db.handoverPeripheralMale : this.db.handoverPeripheralFemale;
+
+                if (handoverList && handoverList.length > 0) {
+                    peripheralUsers = this.db.users.filter(x => handoverList.includes(x.id));
+                } else {
+                    const sortedSameGender = this.db.users
+                        .filter(x => x.batch === curBatch && x.gender === (isMale ? 'Male' : 'Female'))
+                        .sort((a,b) => a.roll - b.roll);
+                    peripheralUsers = sortedSameGender.slice(0, 2);
+                }
+
+                return `
+                    <div class="bg-brand-cardBg border border-brand-orange/30 rounded-2xl p-4 mb-4 shadow-lg">
+                        <h4 class="font-bold text-brand-orange text-xs mb-3 flex items-center gap-2 border-b border-gray-800 pb-2">
+                            <i class="fa-solid fa-clipboard-list text-sm"></i>
+                            <span>রানিং দায়িত্বপ্রাপ্তদের তথ্য (${isMale ? 'ছেলেদের প্যানেল' : 'মেয়েদের প্যানেল'})</span>
+                        </h4>
+
+                        <div class="space-y-2.5 text-xs">
+                            ${isMale && centralUser ? `
+                                <div class="bg-black/60 p-2.5 rounded-xl border border-brand-orange/40 flex items-center justify-between">
+                                    <div>
+                                        <div class="flex items-center gap-1.5 font-bold text-white">
+                                            <span>${centralUser.name}</span>
+                                            <span class="text-[9px] bg-brand-orange text-black px-1.5 py-0.2 rounded font-bold">সেন্ট্রাল</span>
+                                        </div>
+                                        <div class="text-[11px] text-gray-400 mt-0.5">ব্যাচ ${centralUser.batch} | রোল ${centralUser.roll}</div>
+                                    </div>
+                                    <a href="tel:${centralUser.phone}" class="bg-brand-orange/20 border border-brand-orange text-brand-orange px-2.5 py-1 rounded-lg flex items-center gap-1 font-semibold text-[11px] hover:bg-brand-orange hover:text-black transition">
+                                        <i class="fa-solid fa-phone"></i> ${centralUser.phone}
+                                    </a>
+                                </div>
+                            ` : ''}
+
+                            ${peripheralUsers.length > 0 ? peripheralUsers.map(p => `
+                                <div class="bg-black/40 p-2.5 rounded-xl border border-gray-800 flex items-center justify-between">
+                                    <div>
+                                        <div class="flex items-center gap-1.5 font-bold text-gray-200">
+                                            <span>${p.name}</span>
+                                            <span class="text-[9px] bg-gray-800 text-brand-orange border border-brand-orange/40 px-1.5 py-0.2 rounded font-semibold">পেরিফেরাল</span>
+                                        </div>
+                                        <div class="text-[11px] text-gray-400 mt-0.5">ব্যাচ ${p.batch} | রোল ${p.roll} | রুম ${p.room}</div>
+                                    </div>
+                                    <a href="tel:${p.phone}" class="bg-gray-800 border border-gray-700 text-gray-200 px-2.5 py-1 rounded-lg flex items-center gap-1 font-semibold text-[11px] hover:text-white transition">
+                                        <i class="fa-solid fa-phone text-brand-orange"></i> ${p.phone}
+                                    </a>
+                                </div>
+                            `).join('') : `
+                                <p class="text-[11px] text-gray-500 text-center py-1">কোনো পেরিফেরাল তথ্য নির্দিষ্ট নেই</p>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }
+
+            dismissNoticeBanner() {
+                localStorage.setItem('NMC_DISMISSED_NOTICE_TIME', (this.db.noticeUpdatedTime || Date.now()).toString());
+                const banner = document.getElementById('noticeAlertBanner');
+                if (banner) banner.remove();
+            }
+
+            getCentralControlsHtml() {
+                return `
+                    <div class="bg-brand-cardBg border border-brand-orange/40 rounded-2xl p-4 mb-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-bold text-brand-orange text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-sliders"></i> সেন্ট্রাল কন্ট্রোল প্যানেল
+                            </h4>
+                            <button onclick="window.appInstance.toggleSystemSuspend()" class="text-xs px-2.5 py-1 rounded font-semibold ${this.db.systemSuspended ? 'bg-emerald-800 text-emerald-200 border border-emerald-600' : 'bg-red-900/80 text-red-200 border border-red-700'}">
+                                ${this.db.systemSuspended ? 'সিস্টেম চালু করুন' : 'সিস্টেম স্থগিত করুন'}
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-xs text-gray-300 block mb-1">সেন্ট্রাল নোটিশ ব্রডকাস্ট করুন</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="noticeInput" value="${this.db.centralNotices || ''}" placeholder="নোটিশ টাইপ করুন..." class="flex-1 bg-black border border-gray-700 text-xs rounded-lg p-2 text-white focus:border-brand-orange focus:outline-none">
+                                    <button onclick="window.appInstance.updateNotice()" class="bg-brand-orange text-black font-bold text-xs px-3 rounded-lg hover:bg-brand-lightOrange transition">ব্রডকাস্ট</button>
+                                </div>
+                            </div>
+
+                            <div class="pt-2 border-t border-gray-800 grid grid-cols-2 gap-2">
+                                <button onclick="window.appInstance.handoverRoleModal('central')" class="bg-gray-800 text-xs py-2 rounded-lg border border-gray-700 text-gray-300 hover:text-white">
+                                    <i class="fa-solid fa-handshake mr-1"></i> সেন্ট্রালশিপ হস্তান্তর
+                                </button>
+                                <button onclick="window.appInstance.setMealRatesModal()" class="bg-gray-800 text-xs py-2 rounded-lg border border-gray-700 text-gray-300 hover:text-white">
+                                    <i class="fa-solid fa-tags mr-1"></i> মিল রেট পরিবর্তন
+                                </button>
+                            </div>
+
+                            <div class="pt-1">
+                                <button onclick="window.appInstance.deleteBatchModal()" class="w-full bg-red-950/60 border border-red-800 text-red-300 hover:bg-red-900 text-xs py-2 rounded-lg font-semibold transition flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-trash-can text-red-400"></i> নির্দিষ্ট ব্যাচের সকল আইডি ডিলিট করুন
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            getMessSummaryHtml() {
+                const filteredUsers = this.getFilteredUsersForCurrent();
+                let firstHalfCount = 0, secondHalfCount = 0, fullMealCount = 0, feastCount = 0;
+
+                filteredUsers.forEach(u => {
+                    const m = this.db.meals[u.id] || {};
+                    if (m.firstHalf && m.secondHalf) fullMealCount++;
+                    else if (m.firstHalf) firstHalfCount++;
+                    else if (m.secondHalf) secondHalfCount++;
+                    if (m.feast) feastCount++;
+                });
+
+                return `
+                    <div onclick="window.appInstance.openDetailedSummaryModal()" class="bg-brand-cardBg border border-brand-border hover:border-brand-orange/60 transition cursor-pointer rounded-2xl p-4 mb-4 group relative overflow-hidden">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-bold text-white text-sm flex items-center gap-1.5 group-hover:text-brand-orange transition">
+                                <i class="fa-solid fa-chart-pie text-brand-orange"></i> 
+                                <span>মিল সামারি (${this.currentUser.gender === 'Female' && !this.getRoles().isCentral ? 'মেয়েদের' : 'সকলের'})</span>
+                            </h4>
+                            <span class="text-[11px] bg-brand-orange/10 border border-brand-orange/30 text-brand-orange px-2 py-0.5 rounded-full font-semibold flex items-center gap-1">
+                                <i class="fa-solid fa-arrow-right-to-bracket text-[10px]"></i> বিস্তারিত
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                            <div class="bg-black/50 p-2 rounded-lg border border-gray-800">
+                                <div class="text-gray-400">1st Half</div>
+                                <div class="text-lg font-bold text-brand-orange">${firstHalfCount}</div>
+                            </div>
+                            <div class="bg-black/50 p-2 rounded-lg border border-gray-800">
+                                <div class="text-gray-400">2nd Half</div>
+                                <div class="text-lg font-bold text-brand-orange">${secondHalfCount}</div>
+                            </div>
+                            <div class="bg-black/50 p-2 rounded-lg border border-gray-800">
+                                <div class="text-gray-400">Full</div>
+                                <div class="text-lg font-bold text-brand-orange">${fullMealCount}</div>
+                            </div>
+                            <div class="bg-black/50 p-2 rounded-lg border border-gray-800">
+                                <div class="text-gray-400">Feast</div>
+                                <div class="text-lg font-bold text-brand-orange">${feastCount}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            openDetailedSummaryModal() {
+                const allUsers = this.db.users;
+                const batches = [...new Set(allUsers.map(u => u.batch))].sort((a,b) => a - b);
+                const floors = [...new Set(allUsers.map(u => u.floor))].sort((a,b) => a - b);
+
+                const modalHtml = `
+                    <div id="modalBackdrop" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4">
+                        <div class="bg-brand-cardBg border border-brand-orange/40 rounded-2xl p-5 w-full max-w-md space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+                            <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                                <h3 class="font-bold text-brand-orange text-base flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-line text-lg"></i> বিস্তারিত মিল হিসাব
+                                </h3>
+                                <button onclick="window.appInstance.closeModal()" class="text-gray-400 hover:text-white p-1">
+                                    <i class="fa-solid fa-xmark text-lg"></i>
+                                </button>
+                            </div>
+
+                            <!-- Filter Controls -->
+                            <div class="space-y-2 text-xs">
+                                <div>
+                                    <label class="text-gray-300 font-semibold block mb-1">১. জেন্ডার ফিল্টার</label>
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <button id="summaryGender-ALL" onclick="window.appInstance.updateSummaryFilters('gender', 'ALL')" class="py-2 rounded-xl border font-semibold border-brand-orange text-brand-orange bg-brand-orange/10">উভয় (ছেলে+মেয়ে)</button>
+                                        <button id="summaryGender-Male" onclick="window.appInstance.updateSummaryFilters('gender', 'Male')" class="py-2 rounded-xl border font-semibold border-gray-800 text-gray-400 bg-black">ছেলে</button>
+                                        <button id="summaryGender-Female" onclick="window.appInstance.updateSummaryFilters('gender', 'Female')" class="py-2 rounded-xl border font-semibold border-gray-800 text-gray-400 bg-black">মেয়ে</button>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2 pt-1">
+                                    <div>
+                                        <label class="text-gray-300 font-semibold block mb-1">২. ব্যাচ ফিল্টার</label>
+                                        <select id="summaryBatchSelect" onchange="window.appInstance.calculateDetailedSummary()" class="w-full bg-black border border-gray-700 p-2.5 rounded-xl text-white focus:border-brand-orange focus:outline-none text-xs">
+                                            <option value="ALL">সকল ব্যাচ</option>
+                                            ${batches.map(b => `<option value="${b}">ব্যাচ ${b}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-gray-300 font-semibold block mb-1">৩. ফ্লোর ফিল্টার</label>
+                                        <select id="summaryFloorSelect" onchange="window.appInstance.calculateDetailedSummary()" class="w-full bg-black border border-gray-700 p-2.5 rounded-xl text-white focus:border-brand-orange focus:outline-none text-xs">
+                                            <option value="ALL">সকল ফ্লোর</option>
+                                            ${floors.map(f => `<option value="${f}">ফ্লোর ${f}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Result Render Card -->
+                            <div id="summaryResultsContainer" class="bg-black/60 border border-gray-800 rounded-xl p-4 space-y-3">
+                                <!-- Computed values populated here -->
+                            </div>
+
+                            <button onclick="window.appInstance.closeModal()" class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold rounded-xl text-xs transition">
+                                বন্ধ করুন
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                this.selectedSummaryGender = 'ALL';
+                this.calculateDetailedSummary();
+            }
+
+            updateSummaryFilters(type, value) {
+                if (type === 'gender') {
+                    this.selectedSummaryGender = value;
+                    ['ALL', 'Male', 'Female'].forEach(g => {
+                        const btn = document.getElementById(`summaryGender-${g}`);
+                        if (btn) {
+                            if (g === value) {
+                                btn.className = "py-2 rounded-xl border font-semibold border-brand-orange text-brand-orange bg-brand-orange/10";
+                            } else {
+                                btn.className = "py-2 rounded-xl border font-semibold border-gray-800 text-gray-400 bg-black";
+                            }
+                        }
+                    });
+                }
+                this.calculateDetailedSummary();
+            }
+
+            calculateDetailedSummary() {
+                const resultsContainer = document.getElementById('summaryResultsContainer');
+                if (!resultsContainer) return;
+
+                const batchVal = document.getElementById('summaryBatchSelect').value;
+                const floorVal = document.getElementById('summaryFloorSelect').value;
+                const genderVal = this.selectedSummaryGender || 'ALL';
+
+                let users = this.db.users;
+
+                if (genderVal !== 'ALL') users = users.filter(u => u.gender === genderVal);
+                if (batchVal !== 'ALL') users = users.filter(u => u.batch == batchVal);
+                if (floorVal !== 'ALL') users = users.filter(u => u.floor == floorVal);
+
+                let firstHalfCount = 0;
+                let secondHalfCount = 0;
+                let fullMealCount = 0;
+                let feastCount = 0;
+                let maleTotal = 0;
+                let femaleTotal = 0;
+
+                users.forEach(u => {
+                    if (u.gender === 'Male') maleTotal++;
+                    else if (u.gender === 'Female') femaleTotal++;
+
+                    const m = this.db.meals[u.id] || {};
+                    if (m.firstHalf && m.secondHalf) fullMealCount++;
+                    else if (m.firstHalf) firstHalfCount++;
+                    else if (m.secondHalf) secondHalfCount++;
+                    if (m.feast) feastCount++;
+                });
+
+                resultsContainer.innerHTML = `
+                    <div class="flex justify-between items-center text-xs pb-2 border-b border-gray-800 text-gray-300">
+                        <span>মোট সদস্য সংখ্যা: <strong class="text-brand-orange">${users.length}</strong> জন</span>
+                        <span class="text-[11px] text-gray-400">(ছেলে: ${maleTotal} | মেয়ে: ${femaleTotal})</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                        <div class="bg-brand-cardBg border border-gray-800 p-3 rounded-xl flex items-center justify-between">
+                            <div>
+                                <span class="text-gray-400 block text-[11px]">Full Meal</span>
+                                <span class="font-semibold text-white">১st + ২nd Half</span>
+                            </div>
+                            <span class="text-xl font-bold text-brand-orange">${fullMealCount}</span>
+                        </div>
+                        <div class="bg-brand-cardBg border border-gray-800 p-3 rounded-xl flex items-center justify-between">
+                            <div>
+                                <span class="text-gray-400 block text-[11px]">1st Half Only</span>
+                                <span class="font-semibold text-white">শুধুমাত্র ১ম হাফ</span>
+                            </div>
+                            <span class="text-xl font-bold text-brand-orange">${firstHalfCount}</span>
+                        </div>
+                        <div class="bg-brand-cardBg border border-gray-800 p-3 rounded-xl flex items-center justify-between">
+                            <div>
+                                <span class="text-gray-400 block text-[11px]">2nd Half Only</span>
+                                <span class="font-semibold text-white">শুধুমাত্র ২য় হাফ</span>
+                            </div>
+                            <span class="text-xl font-bold text-brand-orange">${secondHalfCount}</span>
+                        </div>
+                        <div class="bg-brand-cardBg border border-gray-800 p-3 rounded-xl flex items-center justify-between">
+                            <div>
+                                <span class="text-gray-400 block text-[11px]">Friday Feast</span>
+                                <span class="font-semibold text-emerald-400">ফিস্ট খাবার</span>
+                            </div>
+                            <span class="text-xl font-bold text-emerald-400">${feastCount}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderMealStatus(container) {
+                const u = this.currentUser;
+                const m = this.db.meals[u.id] || { firstHalf: false, secondHalf: false, feast: false, paidFirst: false, paidSecond: false, paidFeast: false, refundPaid: false };
+
+                const isFullMealEffective = m.firstHalf && m.secondHalf;
+                const totalCalculatedCost = this.calculateUserMealTotal(m);
+                const dueAmount = this.calculateUserDue(m);
+                const refundDetails = this.getUserRefundDetails(m);
+
+                const hasMealWithFeastIncluded = isFullMealEffective || (!m.firstHalf && m.secondHalf);
+                const showFeastRefund = hasMealWithFeastIncluded && m.feast === false;
+
+                let feastStatusSubtext = "";
+                if (!m.firstHalf && !m.secondHalf) {
+                    feastStatusSubtext = `৳ ${this.db.mealRates.standaloneFeast} (শুধু ফিস্ট)`;
+                } else if (m.firstHalf && !m.secondHalf) {
+                    feastStatusSubtext = `১st Half এর সাথে অন্তর্ভুক্ত নয়`;
+                } else if (m.feast !== false) {
+                    feastStatusSubtext = `মিলে অন্তর্ভুক্ত`;
+                } else {
+                    feastStatusSubtext = `<span class="text-emerald-400">অফ করায় ৳${this.db.mealRates.feastDiscount} মাইনাস/ফেরত</span>`;
+                }
+
+                let refundBannerHtml = "";
+                if (refundDetails.eligible) {
+                    if (refundDetails.isCleared) {
+                        refundBannerHtml = `
+                            <div class="bg-emerald-950/40 border border-emerald-600/60 p-3 rounded-xl flex items-center justify-between text-xs text-emerald-300">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+                                    <div>
+                                        <span class="font-bold block">ফিস্ট অফ রিফান্ড পরিশোধিত</span>
+                                        <span class="text-[11px] text-gray-300">পেরিফেরাল থেকে ৳${refundDetails.amount} রিফান্ড প্রদান সম্পন্ন হয়েছে।</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        refundBannerHtml = `
+                            <div class="bg-amber-950/50 border border-amber-500/60 p-3 rounded-xl flex items-center justify-between text-xs text-amber-200 animate-pulse">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-hand-holding-dollar text-amber-400 text-base"></i>
+                                    <div>
+                                        <span class="font-bold block text-amber-300">রিফান্ড ব্যাক পাবেন: ৳${refundDetails.amount}</span>
+                                        <span class="text-[11px] text-gray-300">পূর্বে পরিশোধ করায় Feast Off বাবদ ৳${refundDetails.amount} ফেরত জমা রয়েছে।</span>
+                                    </div>
+                                </div>
+                                <span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded border border-amber-500/40 font-semibold">পেন্ডিং</span>
+                            </div>
+                        `;
+                    }
+                }
+
+                container.innerHTML = `
+                    <div class="mb-4">
+                        <h2 class="text-xl font-bold text-brand-orange">মিল স্ট্যাটাস কন্ট্রোল</h2>
+                        <p class="text-xs text-gray-400">আপনার প্রয়োজনীয় মিলের অপশনগুলো টগল করুন</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        ${refundBannerHtml}
+
+                        <div class="bg-brand-cardBg border border-brand-orange/40 p-4 rounded-2xl flex items-center justify-between shadow-lg">
+                            <div>
+                                <span class="text-xs text-gray-400 block">বর্তমান প্যাকেজ স্ট্যাটাস</span>
+                                <span class="text-sm font-bold ${isFullMealEffective ? 'text-brand-orange' : 'text-white'}">
+                                    ${isFullMealEffective ? `Full Meal Active (৳${this.db.mealRates.fullMeal} প্যাকেজ)` : (m.firstHalf ? `1st Half Active (৳${this.db.mealRates.firstHalf})` : (m.secondHalf ? `2nd Half Active (৳${this.db.mealRates.secondHalf})` : (m.feast ? `Only Feast Active (৳${this.db.mealRates.standaloneFeast})` : 'No Meal Active')))}
+                                </span>
+                                ${showFeastRefund ? `<p class="text-[10px] text-emerald-400 mt-0.5"><i class="fa-solid fa-circle-check mr-1"></i>ফিস্ট অফ থাকায় ৳${this.db.mealRates.feastDiscount} টাকা রিফান্ড ডিসকাউন্ট যুক্ত</p>` : ''}
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs text-gray-400">মোট: <span class="text-sm font-bold text-gray-200">৳${totalCalculatedCost}</span></div>
+                                <div class="text-xs text-gray-400 mt-0.5">বকেয়া: <span class="text-base font-extrabold ${dueAmount === 0 ? 'text-emerald-400' : 'text-brand-orange'}">৳${dueAmount}</span></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-brand-cardBg border border-brand-border p-4 rounded-2xl flex items-center justify-between">
+                            <div>
+                                <div class="font-bold text-brand-orange text-sm flex items-center gap-1.5">
+                                    <i class="fa-solid fa-utensils text-xs"></i> Full Meal (1st + 2nd Half)
+                                </div>
+                                <div class="text-xs text-white font-medium mt-0.5">৳ ${this.db.mealRates.fullMeal} <span class="text-[10px] text-gray-400 font-normal">(বৃহস্পতিবার অন করা যায়)</span></div>
+                                <div class="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+                                    <i class="fa-solid fa-clock text-amber-500"></i> বৃহস্পতি (৭:৩০ PM - ১০:০০ PM)
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" ${isFullMealEffective ? 'checked' : ''} onchange="window.appInstance.toggleFullMeal()" class="sr-only peer">
+                                <div class="w-12 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-orange"></div>
+                            </label>
+                        </div>
+
+                        <div class="bg-brand-cardBg border border-brand-border p-4 rounded-2xl flex items-center justify-between">
+                            <div>
+                                <div class="font-bold text-white text-sm">1st Half Meal</div>
+                                <div class="text-xs text-brand-orange font-medium mt-0.5">৳ ${this.db.mealRates.firstHalf}</div>
+                                <div class="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+                                    <i class="fa-solid fa-clock text-amber-500"></i> বৃহস্পতি (৭:৩০ PM - ১০:০০ PM)
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" ${m.firstHalf ? 'checked' : ''} onchange="window.appInstance.toggleMealOption('firstHalf')" class="sr-only peer">
+                                <div class="w-12 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-orange"></div>
+                            </label>
+                        </div>
+
+                        <div class="bg-brand-cardBg border border-brand-border p-4 rounded-2xl flex items-center justify-between">
+                            <div>
+                                <div class="font-bold text-white text-sm">2nd Half Meal</div>
+                                <div class="text-xs text-brand-orange font-medium mt-0.5">
+                                    ${m.firstHalf ? `৳ ${this.db.mealRates.fullMeal - this.db.mealRates.firstHalf} (1st Half অন থাকায় ফুল মিল ৳${this.db.mealRates.fullMeal} হিসেবে গণ্য)` : `৳ ${this.db.mealRates.secondHalf} (শুধুমাত্র 2nd Half)`}
+                                </div>
+                                <div class="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+                                    <i class="fa-solid fa-clock text-amber-500"></i> সোমাবার (১০:০০ AM - ১০:০০ PM)
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" ${m.secondHalf ? 'checked' : ''} onchange="window.appInstance.toggleMealOption('secondHalf')" class="sr-only peer">
+                                <div class="w-12 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-orange"></div>
+                            </label>
+                        </div>
+
+                        <div class="bg-brand-cardBg border border-brand-border p-4 rounded-2xl flex items-center justify-between">
+                            <div>
+                                <div class="font-bold text-white text-sm">Friday Feast (বিশেষ খাবার)</div>
+                                <div class="text-xs text-brand-orange font-medium mt-0.5">
+                                    ${feastStatusSubtext}
+                                </div>
+                                <div class="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+                                    <i class="fa-solid fa-clock text-amber-500"></i> বৃহস্পতি (১০:০০ AM - ৬:০০ PM)
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" ${m.feast === true ? 'checked' : ''} onchange="window.appInstance.toggleMealOption('feast')" class="sr-only peer">
+                                <div class="w-12 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                            </label>
+                        </div>
+                    </div>
+                `;
+            }
+
+            toggleFullMeal() {
+                if (!this.isMealToggleAllowed('full')) {
+                    this.showToast("সময়সীমা পার হয়ে গেছে! যেকোনো পরিবর্তনের জন্য দায়িত্বপ্রাপ্ত পেরিফেরাল ভাইয়া বা আপুর সাথে যোগাযোগ করুন।");
+                    this.renderApp();
+                    return;
+                }
+
+                const u = this.currentUser;
+                if (!this.db.meals[u.id]) {
+                    this.db.meals[u.id] = { firstHalf: false, secondHalf: false, feast: false, paidFirst: false, paidSecond: false, paidFeast: false, refundPaid: false, note: "" };
+                }
+
+                const currentFull = this.db.meals[u.id].firstHalf && this.db.meals[u.id].secondHalf;
+                if (currentFull) {
+                    this.db.meals[u.id].firstHalf = false;
+                    this.db.meals[u.id].secondHalf = false;
+                    this.db.meals[u.id].feast = false;
+                } else {
+                    this.db.meals[u.id].firstHalf = true;
+                    this.db.meals[u.id].secondHalf = true;
+                    this.db.meals[u.id].feast = true;
+                }
+
+                this.saveData();
+                this.showToast(currentFull ? "ফুল মিল অফ করা হয়েছে" : "ফুল মিল অন করা হয়েছে");
+                this.renderApp();
+            }
+
+            toggleMealOption(type) {
+                if (!this.isMealToggleAllowed(type)) {
+                    this.showToast("সময়সীমা পার হয়ে গেছে! যেকোনো পরিবর্তনের জন্য দায়িত্বপ্রাপ্ত পেরিফেরাল ভাইয়া বা আপুর সাথে যোগাযোগ করুন।");
+                    this.renderApp();
+                    return;
+                }
+
+                const u = this.currentUser;
+                if (!this.db.meals[u.id]) {
+                    this.db.meals[u.id] = { firstHalf: false, secondHalf: false, feast: false, paidFirst: false, paidSecond: false, paidFeast: false, refundPaid: false, note: "" };
+                }
+
+                const currentVal = !!this.db.meals[u.id][type];
+                this.db.meals[u.id][type] = !currentVal;
+
+                if (type === 'secondHalf' && !currentVal) {
+                    this.db.meals[u.id].feast = true;
+                }
+
+                this.saveData();
+                this.showToast("স্ট্যাটাস সফলভাবে পরিবর্তন হয়েছে!");
+                this.renderApp();
+            }
+
+            renderNoticesView(container) {
+                const hasNotice = !!(this.db.centralNotices && this.db.centralNotices.trim().length > 0);
+                container.innerHTML = `
+                    <div class="mb-4">
+                        <h2 class="text-xl font-bold text-brand-orange">নোটিশ বোর্ড</h2>
+                        <p class="text-xs text-gray-400">সেন্ট্রাল থেকে প্রকাশিত সাম্প্রতিক তথ্য ও নির্দেশিকা</p>
+                    </div>
+
+                    ${hasNotice ? `
+                        <div class="bg-brand-cardBg border border-brand-orange/40 rounded-2xl p-4 shadow-xl">
+                            <div class="flex items-center gap-2 text-brand-orange font-bold text-base mb-2">
+                                <i class="fa-solid fa-bullhorn text-lg"></i>
+                                <span>সেন্ট্রাল নোটিশ</span>
+                            </div>
+                            <p class="text-sm text-gray-200 leading-relaxed whitespace-pre-line">${this.db.centralNotices}</p>
+                            ${this.db.noticeUpdatedTime ? `
+                                <div class="mt-4 pt-2 border-t border-gray-800 text-[10px] text-gray-500 text-right">
+                                    প্রকাশিত সময়: ${new Date(this.db.noticeUpdatedTime).toLocaleString('bn-BD')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : `
+                        <div class="bg-brand-cardBg border border-brand-border rounded-2xl p-8 text-center text-gray-500">
+                            <i class="fa-solid fa-bell-slash text-4xl mb-3 text-gray-600"></i>
+                            <p class="text-sm font-semibold text-gray-400">বর্তমানে কোনো নোটিশ নেই</p>
+                        </div>
+                    `}
+                `;
+            }
+
+            renderMembersView(container) {
+                const roles = this.getRoles();
+                const users = this.getFilteredUsersForCurrent();
+
+                const batches = [...new Set(users.map(u => u.batch))].sort();
+                const floors = [...new Set(users.map(u => u.floor))].sort();
+
+                container.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <h2 class="text-xl font-bold text-brand-orange">মেস মেম্বার্স লিস্ট</h2>
+                            <p class="text-xs text-gray-400">ফিল্টার ও পেমেন্ট হিসেব অনুযায়ী তালিকা</p>
+                        </div>
+                        ${roles.isPeripheral || roles.isSecret ? `
+                            <button onclick="window.appInstance.handoverRoleModal('peripheral')" class="text-xs bg-brand-orange/20 border border-brand-orange text-brand-orange px-2.5 py-1.5 rounded-lg">
+                                পেরিফেরাল ট্রান্সফার
+                            </button>
+                        ` : ''}
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <div>
+                            <select id="filterBatch" onchange="window.appInstance.handleFilterChange('batch', this.value)" class="w-full bg-brand-cardBg border border-gray-700 rounded-xl p-2 text-xs text-white focus:border-brand-orange focus:outline-none">
+                                <option value="ALL" ${this.memberFilters.batch === 'ALL' ? 'selected' : ''}>সকল ব্যাচ</option>
+                                ${batches.map(b => `<option value="${b}" ${this.memberFilters.batch == b ? 'selected' : ''}>ব্যাচ ${b}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <select id="filterFloor" onchange="window.appInstance.handleFilterChange('floor', this.value)" class="w-full bg-brand-cardBg border border-gray-700 rounded-xl p-2 text-xs text-white focus:border-brand-orange focus:outline-none">
+                                <option value="ALL" ${this.memberFilters.floor === 'ALL' ? 'selected' : ''}>সকল ফ্লোর</option>
+                                ${floors.map(f => `<option value="${f}" ${this.memberFilters.floor == f ? 'selected' : ''}>ফ্লোর ${f}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <div>
+                            <select id="filterPayment" onchange="window.appInstance.handleFilterChange('payment', this.value)" class="w-full bg-brand-cardBg border border-gray-700 rounded-xl p-2 text-xs text-white focus:border-brand-orange focus:outline-none">
+                                <option value="ALL" ${this.memberFilters.payment === 'ALL' ? 'selected' : ''}>সকল পেমেন্ট স্ট্যাটাস</option>
+                                <option value="PAID" ${this.memberFilters.payment === 'PAID' ? 'selected' : ''}>পেমেন্ট ক্লিয়ারড (Paid)</option>
+                                <option value="DUE" ${this.memberFilters.payment === 'DUE' ? 'selected' : ''}>বকেয়া রয়েছে (Due)</option>
+                                <option value="REFUND" ${this.memberFilters.payment === 'REFUND' ? 'selected' : ''}>রিফান্ড পাওনা রয়েছে</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="filterNote" onchange="window.appInstance.handleFilterChange('note', this.value)" class="w-full bg-brand-cardBg border border-gray-700 rounded-xl p-2 text-xs text-white focus:border-brand-orange focus:outline-none">
+                                <option value="ALL" ${this.memberFilters.note === 'ALL' ? 'selected' : ''}>সকল মেম্বার (নোটসহ/নোটছাড়া)</option>
+                                <option value="HAS_NOTE" ${this.memberFilters.note === 'HAS_NOTE' ? 'selected' : ''}>নোট যুক্ত মেম্বার্স</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="membersListContainer" class="space-y-3">
+                        <!-- Injected dynamically -->
+                    </div>
+                `;
+
+                this.renderMembersList();
+            }
+
+            handleFilterChange(type, value) {
+                this.memberFilters[type] = value;
+                this.renderMembersList();
+            }
+
+            getFilteredUsersForCurrent() {
+                const u = this.currentUser;
+                const roles = this.getRoles();
+
+                let list = this.db.users;
+                
+                if (roles.isSecret) {
+                    list = this.db.users;
+                } else if (roles.isCentral) {
+                    list = this.db.users.filter(x => x.gender === "Male");
+                } else if (roles.isPeripheral) {
+                    list = this.db.users.filter(x => x.gender === u.gender);
+                } else if (u.gender === "Female") {
+                    list = this.db.users.filter(x => x.gender === "Female");
+                }
+
+                return list.sort((a, b) => {
+                    if (a.floor !== b.floor) return a.floor - b.floor;
+                    if (a.room !== b.room) return a.room - b.room;
+                    if (a.roll !== b.roll) return a.roll - b.roll;
+                    return a.name.localeCompare(b.name);
+                });
+            }
+
+            renderMembersList() {
+                const listContainer = document.getElementById('membersListContainer');
+                if (!listContainer) return;
+
+                const batchFilter = this.memberFilters.batch;
+                const floorFilter = this.memberFilters.floor;
+                const paymentFilter = this.memberFilters.payment;
+                const noteFilter = this.memberFilters.note;
+
+                let users = this.getFilteredUsersForCurrent();
+
+                if (batchFilter !== 'ALL') users = users.filter(u => u.batch == batchFilter);
+                if (floorFilter !== 'ALL') users = users.filter(u => u.floor == floorFilter);
+
+                users = users.filter(user => {
+                    const m = this.db.meals[user.id] || {};
+                    const dueAmount = this.calculateUserDue(m);
+                    const totalCost = this.calculateUserMealTotal(m);
+                    const refundDetails = this.getUserRefundDetails(m);
+                    
+                    const isPaidCleared = (dueAmount === 0 || totalCost === 0);
+
+                    if (paymentFilter === 'PAID' && !isPaidCleared) return false;
+                    if (paymentFilter === 'DUE' && isPaidCleared) return false;
+                    if (paymentFilter === 'REFUND' && (!refundDetails.eligible || refundDetails.isCleared)) return false;
+
+                    const hasNote = m.note && m.note.trim().length > 0;
+                    if (noteFilter === 'HAS_NOTE' && !hasNote) return false;
+
+                    return true;
+                });
+
+                const roles = this.getRoles();
+                const canModifyData = roles.isPeripheral || roles.isSecret;
+
+                if (users.length === 0) {
+                    listContainer.innerHTML = `
+                        <div class="text-center py-8 text-gray-500 bg-brand-cardBg border border-brand-border rounded-xl">
+                            <i class="fa-solid fa-filter-circle-xmark text-3xl mb-2 text-gray-600"></i>
+                            <p class="text-xs">নির্বাচনকৃত ফিল্টার অনুযায়ী কোনো মেম্বার পাওয়া যায়নি</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                listContainer.innerHTML = users.map(user => {
+                    const m = this.db.meals[user.id] || { firstHalf: false, secondHalf: false, feast: false, paidFirst: false, paidSecond: false, paidFeast: false, refundPaid: false, note: "" };
+                    const userTotalBill = this.calculateUserMealTotal(m);
+                    const userDueAmount = this.calculateUserDue(m);
+                    const refundDetails = this.getUserRefundDetails(m);
+
+                    const hasActiveFirst = !!m.firstHalf;
+                    const hasActiveSecond = !!m.secondHalf;
+                    const hasActiveFeast = (m.feast === true);
+                    const hasAnyMeal = hasActiveFirst || hasActiveSecond || hasActiveFeast;
+
+                    const isFullPaid = hasAnyMeal ? (
+                        (!hasActiveFirst || m.paidFirst) &&
+                        (!hasActiveSecond || m.paidSecond) &&
+                        (!hasActiveFeast || m.paidFeast)
+                    ) : true;
+
+                    const safeNote = (m.note || '').replace(/"/g, '&quot;');
+
+                    return `
+                        <div class="bg-brand-cardBg border border-brand-border rounded-xl p-3 flex flex-col gap-2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div class="font-bold text-white text-sm flex items-center gap-2">
+                                        <span>${user.name}</span>
+                                        ${user.fb ? `<a href="${user.fb}" target="_blank" class="text-blue-400 text-xs"><i class="fa-brands fa-facebook"></i></a>` : ''}
+                                    </div>
+                                    <div class="text-xs text-gray-400">রোল: ${user.roll} | ব্যাচ: ${user.batch} | ফ্লোর: ${user.floor} | রুম: ${user.room}</div>
+                                    <div class="text-xs text-gray-500 mt-0.5"><i class="fa-solid fa-phone mr-1"></i>${user.phone}</div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs font-semibold px-2 py-0.5 rounded ${user.gender === 'Male' ? 'bg-blue-900/40 text-blue-300' : 'bg-pink-900/40 text-pink-300'}">
+                                        ${user.gender === 'Male' ? 'ছেলে' : 'মেয়ে'}
+                                    </span>
+                                    <div class="mt-1 text-xs flex flex-col items-end">
+                                        <div>
+                                            <span class="text-gray-400">মোট: </span>
+                                            <span class="font-bold text-gray-200">৳${userTotalBill}</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-400">বকেয়া: </span>
+                                            <span class="font-bold ${userDueAmount === 0 ? 'text-emerald-400' : 'text-brand-orange'}">৳${userDueAmount}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border-t border-gray-800 pt-2 flex flex-wrap justify-between items-center gap-2 text-xs">
+                                <div class="flex gap-2">
+                                    <span class="px-2 py-1 rounded bg-black border ${m.firstHalf ? 'border-emerald-500 text-emerald-400' : 'border-gray-800 text-gray-500'}">
+                                        1st: ${m.firstHalf ? 'ON' : 'OFF'}
+                                    </span>
+                                    <span class="px-2 py-1 rounded bg-black border ${m.secondHalf ? 'border-emerald-500 text-emerald-400' : 'border-gray-800 text-gray-500'}">
+                                        2nd: ${m.secondHalf ? 'ON' : 'OFF'}
+                                    </span>
+                                    <span class="px-2 py-1 rounded bg-black border ${m.feast === true ? 'border-amber-500 text-amber-400' : 'border-gray-800 text-gray-500'}">
+                                        Feast: ${m.feast === true ? 'ON' : 'OFF'}
+                                    </span>
+                                </div>
+
+                                ${canModifyData ? `
+                                    <button onclick="window.appInstance.editUserMealModal('${user.id}')" class="bg-brand-orange/20 border border-brand-orange text-brand-orange text-[11px] px-2 py-1 rounded-lg">
+                                        স্ট্যাটাস চেঞ্জ
+                                    </button>
+                                ` : ''}
+                            </div>
+
+                            ${refundDetails.eligible ? `
+                                <div class="bg-amber-950/40 border border-amber-600/50 p-2 rounded-lg flex items-center justify-between text-xs">
+                                    <div class="flex items-center gap-1.5 text-amber-300 font-medium">
+                                        <i class="fa-solid fa-hand-holding-dollar text-amber-400"></i>
+                                        <span>Feast Off রিফান্ড পাওনা: <strong class="text-amber-200">৳${refundDetails.amount}</strong></span>
+                                    </div>
+                                    ${canModifyData ? `
+                                        <label class="flex items-center gap-1 text-[11px] font-semibold text-emerald-400 cursor-pointer bg-black/60 px-2 py-1 rounded border border-gray-700">
+                                            <input type="checkbox" ${refundDetails.isCleared ? 'checked' : ''} onchange="window.appInstance.toggleRefundClearance('${user.id}', this.checked)" class="accent-emerald-500">
+                                            <span>রিফান্ড দেওয়া শেষ (ক্লিয়ার)</span>
+                                        </label>
+                                    ` : `
+                                        <span class="text-[10px] ${refundDetails.isCleared ? 'text-emerald-400 font-bold' : 'text-amber-400 font-semibold'}">
+                                            ${refundDetails.isCleared ? '✓ পরিশোধিত' : '⏳ পেন্ডিং'}
+                                        </span>
+                                    `}
+                                </div>
+                            ` : ''}
+
+                            ${canModifyData ? `
+                                <div class="border-t border-gray-800/60 pt-2 space-y-2">
+                                    <div class="flex justify-between items-center text-xs text-gray-300">
+                                        <span class="font-medium text-gray-400">পেমেন্ট চেক:</span>
+                                        <div class="flex gap-2 items-center">
+                                            <label class="flex items-center gap-1 cursor-pointer font-semibold text-brand-orange ${!hasAnyMeal ? 'opacity-50 cursor-not-allowed' : ''}">
+                                                <input type="checkbox" ${isFullPaid ? 'checked' : ''} ${!hasAnyMeal ? 'disabled' : ''} onchange="window.appInstance.toggleFullPayment('${user.id}', this.checked)" class="accent-brand-orange">
+                                                <span>Full</span>
+                                            </label>
+                                            <span class="text-gray-600">|</span>
+                                            <label class="flex items-center gap-1 cursor-pointer ${!hasActiveFirst ? 'opacity-40 cursor-not-allowed' : ''}">
+                                                <input type="checkbox" ${m.paidFirst || !hasActiveFirst ? 'checked' : ''} ${!hasActiveFirst ? 'disabled' : ''} onchange="window.appInstance.togglePayment('${user.id}', 'paidFirst')" class="accent-brand-orange">
+                                                <span>1st</span>
+                                            </label>
+                                            <label class="flex items-center gap-1 cursor-pointer ${!hasActiveSecond ? 'opacity-40 cursor-not-allowed' : ''}">
+                                                <input type="checkbox" ${m.paidSecond || !hasActiveSecond ? 'checked' : ''} ${!hasActiveSecond ? 'disabled' : ''} onchange="window.appInstance.togglePayment('${user.id}', 'paidSecond')" class="accent-brand-orange">
+                                                <span>2nd</span>
+                                            </label>
+                                            <label class="flex items-center gap-1 cursor-pointer ${!hasActiveFeast ? 'opacity-40 cursor-not-allowed' : ''}">
+                                                <input type="checkbox" ${m.paidFeast || !hasActiveFeast ? 'checked' : ''} ${!hasActiveFeast ? 'disabled' : ''} onchange="window.appInstance.togglePayment('${user.id}', 'paidFeast')" class="accent-brand-orange">
+                                                <span>Feast</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex gap-2">
+                                        <input type="text" id="note-${user.id}" value="${safeNote}" oninput="window.appInstance.updateLocalNoteMemory('${user.id}', this.value)" placeholder="নোট (বাকি/ফেরত লিখুন)..." class="flex-1 bg-black border border-gray-800 text-xs rounded-lg px-2.5 py-1.5 text-white placeholder-gray-600 focus:border-brand-orange focus:outline-none">
+                                        <button onclick="window.appInstance.saveUserNote('${user.id}')" class="bg-brand-orange hover:bg-brand-lightOrange text-black font-semibold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 shadow">
+                                            <i class="fa-solid fa-floppy-disk text-[10px]"></i> সেভ
+                                        </button>
+                                    </div>
+                                </div>
+                            ` : (m.note ? `<div class="text-[11px] text-amber-400 bg-amber-950/20 p-2 rounded-lg border border-amber-800/40"><i class="fa-solid fa-sticky-note mr-1"></i> ${m.note}</div>` : '')}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            renderPdfView(container) {
+                const roles = this.getRoles();
+                const u = this.currentUser;
+
+                let allowedGender = u.gender;
+                if (roles.isCentral) allowedGender = "Male";
+                if (roles.isSecret) allowedGender = this.pdfTargetGender || "Male";
+
+                const relevantUsers = this.db.users.filter(x => roles.isSecret ? x.gender === allowedGender : x.gender === u.gender);
+                const availableBatches = [...new Set(relevantUsers.map(x => x.batch))].sort((a,b) => a - b);
+                const availableFloors = [...new Set(relevantUsers.map(x => x.floor))].sort((a,b) => a - b);
+
+                container.innerHTML = `
+                    <div class="mb-4">
+                        <h2 class="text-xl font-bold text-brand-orange">পিডিএফ রিপোর্ট জেনারেটর</h2>
+                        <p class="text-xs text-gray-400">নির্দিষ্ট ব্যাচ ও ফ্লোরের বিবরণ ও হিসাব সংবলিত ফাইল ডাউনলোড</p>
+                    </div>
+
+                    <div class="bg-brand-cardBg border border-brand-border rounded-2xl p-4 mb-4 space-y-4">
+                        ${roles.isSecret ? `
+                            <div>
+                                <label class="text-xs text-gray-300 font-semibold block mb-2">১. জেন্ডার নির্বাচন (সুপার এডমিন)</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="window.appInstance.setPdfTargetGender('Male')" class="py-2 rounded-xl text-xs border font-semibold ${allowedGender === 'Male' ? 'border-brand-orange text-brand-orange bg-brand-orange/10' : 'border-gray-800 text-gray-400 bg-black'}">ছেলেদের রিপোর্ট</button>
+                                    <button onclick="window.appInstance.setPdfTargetGender('Female')" class="py-2 rounded-xl text-xs border font-semibold ${allowedGender === 'Female' ? 'border-brand-orange text-brand-orange bg-brand-orange/10' : 'border-gray-800 text-gray-400 bg-black'}">মেয়েদের রিপোর্ট</button>
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="text-xs text-gray-300 font-semibold">১. ব্যাচ নির্বাচন (একাধিক সিলেক্ট করা যাবে)</label>
+                                <button onclick="window.appInstance.toggleAllPdfFilters('batch')" class="text-[10px] text-brand-orange font-medium">সব সিলেক্ট/আনসিলেক্ট</button>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-2 bg-black/60 rounded-xl border border-gray-800" id="pdfBatchContainer">
+                                ${availableBatches.map(b => `
+                                    <button onclick="window.appInstance.togglePdfFilter('batch', '${b}')" id="pdfBatchBtn-${b}" class="px-2.5 py-1 text-xs rounded-lg border font-medium ${this.pdfBatchFilters.includes('ALL') || this.pdfBatchFilters.includes(b.toString()) ? 'border-brand-orange bg-brand-orange/20 text-brand-orange' : 'border-gray-800 bg-gray-900 text-gray-400'}">
+                                        ব্যাচ ${b}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="text-xs text-gray-300 font-semibold">২. ফ্লোর নির্বাচন (একাধিক সিলেক্ট করা যাবে)</label>
+                                <button onclick="window.appInstance.toggleAllPdfFilters('floor')" class="text-[10px] text-brand-orange font-medium">সব সিলেক্ট/আনসিলেক্ট</button>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-2 bg-black/60 rounded-xl border border-gray-800" id="pdfFloorContainer">
+                                ${availableFloors.map(f => `
+                                    <button onclick="window.appInstance.togglePdfFilter('floor', '${f}')" id="pdfFloorBtn-${f}" class="px-2.5 py-1 text-xs rounded-lg border font-medium ${this.pdfFloorFilters.includes('ALL') || this.pdfFloorFilters.includes(f.toString()) ? 'border-brand-orange bg-brand-orange/20 text-brand-orange' : 'border-gray-800 bg-gray-900 text-gray-400'}">
+                                        ফ্লোর ${f}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="bg-black/60 border border-gray-800 rounded-xl p-3 text-xs text-gray-300 space-y-1">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">টার্গেট প্যানেল:</span>
+                                <span class="font-semibold text-white">${allowedGender === 'Male' ? 'ছেলেদের প্যানেল' : 'মেয়েদের প্যানেল'}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">নিরাপত্তা পলিসি:</span>
+                                <span class="font-semibold text-brand-orange">ফোন নম্বর গোপন থাকবে</span>
+                            </div>
+                        </div>
+
+                        <button onclick="window.appInstance.generateAndDownloadPDF()" class="w-full bg-brand-orange hover:bg-brand-lightOrange text-black font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 text-sm shadow-xl">
+                            <i class="fa-solid fa-file-pdf text-lg"></i>
+                            <span>পিডিএফ জেনারেট ও ডাউনলোড করুন</span>
+                        </button>
+                    </div>
+
+                    <div class="bg-brand-cardBg border border-brand-border rounded-2xl p-4">
+                        <h4 class="font-bold text-white text-xs mb-2 flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-info text-brand-orange"></i>
+                            <span>পিডিএফ ফরম্যাটিং সংক্রান্ত তথ্য</span>
+                        </h4>
+                        <ul class="text-[11px] text-gray-400 space-y-1 list-disc pl-4">
+                            <li>প্রতি বৃহস্পতিবার সন্ধ্যা ৬:০০ - ৭:০০ টার মধ্যে পেরিফেরাল প্যানেল থেকে রিপোর্ট ডাউনলোড করুন।</li>
+                            <li>নির্দিষ্ট এক বা একাধিক ব্যাচ ও ফ্লোর ফিল্টার করে একদম নিখুঁত রিপোর্ট তৈরি করা যাবে।</li>
+                        </ul>
+                    </div>
+                `;
+            }
+
+            setPdfTargetGender(gender) {
+                this.pdfTargetGender = gender;
+                this.renderPdfView(document.getElementById('mainContainer'));
+            }
+
+            togglePdfFilter(type, value) {
+                const targetArray = type === 'batch' ? this.pdfBatchFilters : this.pdfFloorFilters;
+                
+                if (targetArray.includes('ALL')) {
+                    targetArray.length = 0;
+                }
+
+                const index = targetArray.indexOf(value.toString());
+                if (index > -1) {
+                    targetArray.splice(index, 1);
+                } else {
+                    targetArray.push(value.toString());
+                }
+
+                if (targetArray.length === 0) {
+                    targetArray.push('ALL');
+                }
+
+                this.renderPdfView(document.getElementById('mainContainer'));
+            }
+
+            toggleAllPdfFilters(type) {
+                const targetArray = type === 'batch' ? this.pdfBatchFilters : this.pdfFloorFilters;
+                if (targetArray.includes('ALL')) {
+                    targetArray.length = 0;
+                } else {
+                    targetArray.length = 0;
+                    targetArray.push('ALL');
+                }
+                this.renderPdfView(document.getElementById('mainContainer'));
+            }
+
+            generateAndDownloadPDF() {
+                const roles = this.getRoles();
+                const u = this.currentUser;
+
+                let allowedGender = u.gender;
+                if (roles.isCentral) allowedGender = "Male";
+                if (roles.isSecret) allowedGender = this.pdfTargetGender || "Male";
+
+                let users = this.db.users.filter(x => x.gender === allowedGender);
+
+                if (!this.pdfBatchFilters.includes('ALL')) {
+                    users = users.filter(x => this.pdfBatchFilters.includes(x.batch.toString()));
+                }
+
+                if (!this.pdfFloorFilters.includes('ALL')) {
+                    users = users.filter(x => this.pdfFloorFilters.includes(x.floor.toString()));
+                }
+
+                if (users.length === 0) {
+                    this.showToast("সিলেক্টকৃত ফিল্টার অনুযায়ী পিডিএফ তৈরি করার মতো কোনো মেম্বার পাওয়া যায়নি!");
+                    return;
+                }
+
+                users.sort((a,b) => {
+                    if (a.batch !== b.batch) return a.batch - b.batch;
+                    if (a.floor !== b.floor) return a.floor - b.floor;
+                    return a.roll - b.roll;
+                });
+
+                let totalBillsSum = 0;
+                let totalDuesSum = 0;
+
+                const cardsHtml = users.map(u => {
+                    const m = this.db.meals[u.id] || { firstHalf: false, secondHalf: false, feast: false, paidFirst: false, paidSecond: false, paidFeast: false, refundPaid: false, note: "" };
+                    const userTotalBill = this.calculateUserMealTotal(m);
+                    const userDueAmount = this.calculateUserDue(m);
+                    const refundDetails = this.getUserRefundDetails(m);
+
+                    totalBillsSum += userTotalBill;
+                    totalDuesSum += userDueAmount;
+
+                    return `
+                        <div class="pdf-card" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; margin-bottom: 8px; box-sizing: border-box; font-family: 'Hind Siliguri', 'Inter', sans-serif; width: 100%;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin-bottom: 5px;">
+                                <div>
+                                    <span style="font-size: 13px; font-weight: 700; color: #0f172a; display: block; line-height: 1.2;">${u.name}</span>
+                                    <span style="font-size: 10px; color: #64748b; font-weight: 500;">ব্যাচ: ${u.batch} | রোল: ${u.roll} | ফ্লোর: ${u.floor} | রুম: ${u.room}</span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-size: 11px; font-weight: 700; color: #2563eb; display: block;">বিল: ৳${userTotalBill}</span>
+                                    <span style="font-size: 11px; font-weight: 700; color: ${userDueAmount > 0 ? '#dc2626' : '#16a34a'};">বকেয়া: ৳${userDueAmount}</span>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10px;">
+                                <div style="display: flex; gap: 6px;">
+                                    <span style="background: ${m.firstHalf ? '#dcfce7' : '#f1f5f9'}; color: ${m.firstHalf ? '#15803d' : '#64748b'}; padding: 1px 5px; border-radius: 4px; font-weight: 600;">1st: ${m.firstHalf ? 'ON' : 'OFF'}</span>
+                                    <span style="background: ${m.secondHalf ? '#dcfce7' : '#f1f5f9'}; color: ${m.secondHalf ? '#15803d' : '#64748b'}; padding: 1px 5px; border-radius: 4px; font-weight: 600;">2nd: ${m.secondHalf ? 'ON' : 'OFF'}</span>
+                                    <span style="background: ${m.feast ? '#fef3c7' : '#f1f5f9'}; color: ${m.feast ? '#b45309' : '#64748b'}; padding: 1px 5px; border-radius: 4px; font-weight: 600;">Feast: ${m.feast ? 'ON' : 'OFF'}</span>
+                                </div>
+                                <div style="font-size: 10px; color: #475569; font-weight: 600;">
+                                    পেমেন্ট: ${userTotalBill === 0 ? 'মেস অফ' : (userDueAmount === 0 ? '✓ পরিশোধিত (Paid)' : '⏳ বকেয়া')}
+                                </div>
+                            </div>
+
+                            ${refundDetails.eligible ? `
+                                <div style="margin-top: 5px; background: #fffbeb; border: 1px solid #fcd34d; padding: 3px 6px; border-radius: 4px; font-size: 9.5px; color: #92400e; display: flex; justify-content: space-between; align-items: center;">
+                                    <span><strong>রিফান্ড পাওনা:</strong> ৳${refundDetails.amount}</span>
+                                    <span><strong>স্ট্যাটাস:</strong> ${refundDetails.isCleared ? '✓ পরিশোধিত (Clear)' : '⏳ পেন্ডিং'}</span>
+                                </div>
+                            ` : ''}
+
+                            ${m.note ? `
+                                <div style="margin-top: 5px; background: #f8fafc; border: 1px solid #cbd5e1; padding: 3px 6px; border-radius: 4px; font-size: 9.5px; color: #334155; word-break: break-word;">
+                                    <strong>নোট:</strong> ${m.note}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                const printableContainer = document.createElement('div');
+                printableContainer.id = "pdfPrintArea";
+                printableContainer.style.width = "100%";
+                printableContainer.style.maxWidth = "750px";
+                printableContainer.style.padding = "16px";
+                printableContainer.style.boxSizing = "border-box";
+                printableContainer.style.background = "#ffffff";
+                printableContainer.style.color = "#000000";
+
+                printableContainer.innerHTML = `
+                    <div style="border-bottom: 2px solid #ea580c; padding-bottom: 8px; margin-bottom: 12px; text-align: center;">
+                        <h2 style="font-size: 18px; font-weight: 800; color: #ea580c; margin: 0;">নোয়াখালী মেডিকেল কলেজ মেস সিস্টেম</h2>
+                        <p style="font-size: 11px; color: #475569; margin: 2px 0 0 0;">মেস মেম্বার মিল ও পেমেন্ট সামারি রিপোর্ট (${allowedGender === 'Male' ? 'ছেলেদের প্যানেল' : 'মেয়েদের প্যানেল'})</p>
+                        <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 10px; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 4px;">
+                            <span>ব্যাচ: <strong>${this.pdfBatchFilters.join(', ')}</strong></span>
+                            <span>ফ্লোর: <strong>${this.pdfFloorFilters.join(', ')}</strong></span>
+                            <span>মোট সদস্য: <strong>${users.length} জন</strong></span>
+                            <span>তারিখ: <strong>${new Date().toLocaleDateString('bn-BD')}</strong></span>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        ${cardsHtml}
+                    </div>
+
+                    <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; font-size: 11px; display: flex; justify-content: space-between; font-weight: 700; color: #0f172a;" class="pdf-card">
+                        <span>সর্বমোট মিল বিল: ৳${totalBillsSum}</span>
+                        <span>সর্বমোট বকেয়া: ৳${totalDuesSum}</span>
+                    </div>
+                `;
+
+                document.body.appendChild(printableContainer);
+
+                this.showToast("পিডিএফ ফাইল প্রসেস হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...");
+
+                const opt = {
+                    margin:       [0.3, 0.3, 0.3, 0.3],
+                    filename:     `NMC_Mess_Report_${allowedGender}_${Date.now()}.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0 },
+                    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+                    pagebreak:    { mode: ['css', 'legacy'] }
+                };
+
+                html2pdf().set(opt).from(printableContainer).save().then(() => {
+                    printableContainer.remove();
+                    this.showToast("পিডিএফ রিপোর্ট সফলভাবে ডাউনলোড হয়েছে!");
+                }).catch(err => {
+                    console.error("PDF generation error:", err);
+                    printableContainer.remove();
+                    this.showToast("পিডিএফ ডাউনলোডে সমস্যা হয়েছে!");
+                });
+            }
+
+            toggleRefundClearance(userId, checked) {
+                if (!this.db.meals[userId]) {
+                    this.db.meals[userId] = { firstHalf: false, secondHalf: false, feast: false, paidFirst: false, paidSecond: false, paidFeast: false, refundPaid: false, note: "" };
+                }
+                this.db.meals[userId].refundPaid = checked;
+                this.saveData();
+                this.showToast(checked ? "রিফান্ড ফেরত দেওয়া সম্পন্ন হয়েছে!" : "রিফান্ড স্ট্যাটাস পেন্ডিং করা হয়েছে");
+
+                if (this.currentUser && this.currentUser.id === userId) {
+                    this.renderApp();
+                } else {
+                    this.renderMembersList();
+                }
+            }
+
+            updateLocalNoteMemory(userId, text) {
+                if (!this.db.meals[userId]) {
+                    this.db.meals[userId] = { firstHalf: false, secondHalf: false, feast: false, paidFirst: false, paidSecond: false, paidFeast: false, refundPaid: false, note: "" };
+                }
+                this.db.meals[userId].note = text;
+            }
+
+            saveUserNote(userId) {
+                const noteInput = document.getElementById(`note-${userId}`);
+                const val = noteInput ? noteInput.value : (this.db.meals[userId]?.note || "");
+
+                if (!this.db.meals[userId]) {
+                    this.db.meals[userId] = { firstHalf: false, secondHalf: false, feast: false, paidFirst: false, paidSecond: false, paidFeast: false, refundPaid: false, note: "" };
+                }
+
+                this.db.meals[userId].note = val;
+                this.saveData();
+                this.showToast("নোট সফলভাবে সংরক্ষণ করা হয়েছে!");
+            }
+
+            toggleFullPayment(userId, checked) {
+                if (!this.db.meals[userId]) {
+                    this.db.meals[userId] = { firstHalf: false, secondHalf: false, feast: false, paidFirst: false, paidSecond: false, paidFeast: false, refundPaid: false, note: "" };
+                }
+                this.db.meals[userId].paidFirst = checked;
+                this.db.meals[userId].paidSecond = checked;
+                this.db.meals[userId].paidFeast = checked;
+                this.saveData();
+                this.showToast(checked ? "সব পেমেন্ট পেইড হিসেবে চিহ্নিত হয়েছে" : "পেমেন্ট আনচেক করা হয়েছে");
+                
+                if (this.currentUser && this.currentUser.id === userId) {
+                    this.renderApp();
+                } else {
+                    this.renderMembersList();
+                }
+            }
+
+            togglePayment(userId, field) {
+                if (!this.db.meals[userId]) {
+                    this.db.meals[userId] = { firstHalf: false, secondHalf: false, feast: false, paidFirst: false, paidSecond: false, paidFeast: false, refundPaid: false, note: "" };
+                }
+                this.db.meals[userId][field] = !this.db.meals[userId][field];
+                this.saveData();
+                this.showToast("পেমেন্ট স্ট্যাটাস আপডেট হয়েছে!");
+                
+                if (this.currentUser && this.currentUser.id === userId) {
+                    this.renderApp();
+                } else {
+                    this.renderMembersList();
+                }
+            }
+
+            renderGuide(container) {
+                container.innerHTML = `
+                    <div class="mb-4">
+                        <h2 class="text-xl font-bold text-brand-orange">ইউজার গাইডলাইন</h2>
+                        <p class="text-xs text-gray-400">মেস অ্যাপ ব্যবহারের নিয়মাবলী ও পরিচালনা নির্দেশিকা</p>
+                    </div>
+
+                    <div class="space-y-4 text-xs text-gray-300">
+                        
+                        <!-- ১. সাধারণ ব্যবহারকারীদের গাইডলাইন -->
+                        <div class="bg-brand-cardBg border border-brand-border p-4 rounded-xl space-y-2">
+                            <h3 class="font-bold text-brand-orange text-sm mb-2 flex items-center gap-2">
+                                ১. সাধারণ সদস্যদের জন্য নির্দেশিকা
+                            </h3>
+                            <div class="space-y-1.5 text-gray-300">
+                                <p><strong class="text-white">● মিল স্ট্যাটাস পরিবর্তন:</strong> সময়সীমার মধ্যে অ্যাপের "মিল স্ট্যাটাস" ট্যাব থেকে ১ম হাফ, ২য় হাফ বা ফিস্ট অন/অফ করতে পারবেন।</p>
+                                <p><strong class="text-white">● সময়সীমা অনুসরণ:</strong> নির্ধারিত সময় পার হওয়ার পর নিজে নিজে মিল পরিবর্তন করা যাবে না। বিশেষ প্রয়োজনে দায়িত্বপ্রাপ্ত পেরিফেরাল ভাইয়ের/আপুর সাথে যোগাযোগ করুন।</p>
+                                <p><strong class="text-white">● পেমেন্ট ও বকেয়া দেখা:</strong> আপনার মেস বিল ও বকেয়ার পরিমাণ নিজ অ্যাকাউন্টে দেখতে পাবেন। রিফান্ড জমা থাকলে তাও স্ট্যাটাস বক্সে প্রদর্শিত হবে।</p>
+                            </div>
+                        </div>
+
+                        <!-- ২. পেরিফেরাল প্যানেল গাইডলাইন -->
+                        <div class="bg-brand-cardBg border border-brand-border p-4 rounded-xl space-y-2">
+                            <h3 class="font-bold text-brand-orange text-sm mb-2 flex items-center gap-2">
+                                ২. পেরিফেরাল প্যানেলের দায়িত্ব ও গাইডলাইন
+                            </h3>
+                            <div class="space-y-1.5 text-gray-300">
+                                <p><strong class="text-white">● মিল ওভাররাইড ও পেমেন্ট আপডেট:</strong> মেস মেম্বার্স সেকশন থেকে যেকোনো মেম্বারের মিল ওভাররাইড, পেমেন্ট স্ট্যাটাস টিক দেওয়া এবং ব্যক্তিগত নোট যোগ করতে পারবেন।</p>
+                                <p><strong class="text-white">● রিফান্ড ক্লিয়ারেন্স:</strong> যেসকল মেম্বার ফিস্ট অফ করায় রিফান্ড পাবেন, তাদেরকে রিফান্ড বুঝিয়ে দেওয়ার পর "রিফান্ড দেওয়া শেষ (ক্লিয়ার)" বক্সে টিক দিন।</p>
+                                <p><strong class="text-white">● সাপ্তাহিক পিডিএফ রিপোর্ট:</strong> প্রতি বৃহস্পতিবার সন্ধ্যা ৬:০০ থেকে ৭:০০ টার মধ্যে "পিডিএফ রিপোর্ট" সেকশন থেকে পুরো সপ্তাহের হিসাব ডাউনলোড করে সংরক্ষণ করবেন।</p>
+                                <p><strong class="text-white">● দায়িত্ব হস্তান্তর:</strong> নতুন পেরিফেরাল নির্বাচন করতে "পেরিফেরাল ট্রান্সফার" বোতাম ব্যবহার করে দায়িত্ব হস্তান্তর করতে পারবেন।</p>
+                            </div>
+                        </div>
+
+                        <!-- ৩. সেন্ট্রাল প্যানেল গাইডলাইন -->
+                        <div class="bg-brand-cardBg border border-brand-border p-4 rounded-xl space-y-2">
+                            <h3 class="font-bold text-brand-orange text-sm mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-crown text-base"></i> ৩. সেন্ট্রাল প্যানেলের দায়িত্ব ও কন্ট্রোল
+                            </h3>
+                            <div class="space-y-1.5 text-gray-300">
+                                <p><strong class="text-white">● মিল রেট পরিবর্তন:</strong> মেসের প্রয়োজনে ফুল মিল, ১ম হাফ, ২য় হাফ বা ফিস্ট রিফান্ডের রেট যেকোনো সময় পরিবর্তন করতে পারবেন।</p>
+                                <p><strong class="text-white">● নোটিশ ব্রডকাস্ট:</strong> যেকোনো জরুরি সিদ্ধান্ত সকল মেম্বারদের জানাতে নোটিশ বোর্ড ব্যবহার করে মেসেজ পাঠাতে পারবেন।</p>
+                                <p><strong class="text-white">● মেস সিস্টেম স্থগিতকরণ:</strong> জরুরি প্রয়োজনে মিল কার্যক্রম সাময়িকভাবে স্থগিত করা বা পুনরায় চালু করা যাবে।</p>
+                                <p><strong class="text-white">● সেন্ট্রালশিপ হস্তান্তর:</strong> নতুন সেন্ট্রাল নির্বাচন করতে "সেন্ট্রালশিপ হস্তান্তর" অপশন ব্যবহার করুন।</p>
+                            </div>
+                        </div>
+
+                        <!-- ৪. সময়সূচী ও স্বয়ংক্রিয় রিসেট -->
+                        <div class="bg-brand-cardBg border border-brand-border p-4 rounded-xl space-y-2">
+                            <h3 class="font-bold text-brand-orange text-sm mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-clock text-base"></i> ৪. সময়সূচী ও সাপ্তাহিক অটো রিনিউ
+                            </h3>
+                            <p class="text-gray-300 leading-relaxed">
+                                প্রতি <strong class="text-white">বৃহস্পতিবার সন্ধ্যা ৭:০০ টায়</strong> অ্যাপের সকল মিল স্ট্যাটাস, পেমেন্ট ও নোট স্বয়ংক্রিয়ভাবে মুছে নতুন সপ্তাহের জন্য রিনিউ হয়ে যাবে। তাই সকল পেরিফেরাল অবশ্যই বৃহস্পতিবার সন্ধ্যা ৭:০০ টার পূর্বেই সপ্তাহের পিডিএফ রিপোর্ট ডাউনলোড সম্পন্ন করবেন।
+                            </p>
+                        </div>
+
+                        <!-- Vision Architect Dark & Golden Glossy Credit Card -->
+                        <div class="relative overflow-hidden rounded-2xl p-5 shimmer-bg border border-amber-500/40 shadow-2xl transition transform hover:scale-[1.01]" style="background: linear-gradient(135deg, #0d0d0d 0%, #1a1508 50%, #2a1f0a 100%);">
+                            <div class="absolute -right-6 -top-6 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                            <div class="absolute -left-6 -bottom-6 w-28 h-28 bg-orange-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                            <div class="relative z-10 flex flex-col justify-between h-full space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex flex-col">
+                                        <h3 class="text-2xl font-black text-amber-100 tracking-wide drop-shadow-md">Munsur</h3>
+                                        <span class="text-xs font-bold text-amber-400 tracking-wider">NMC-18th</span>
+                                    </div>
+                                    <a href="https://www.facebook.com/md.munsur.321325" target="_blank" class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-black flex items-center justify-center font-bold text-xl shadow-lg hover:scale-110 hover:brightness-125 transition duration-300" title="Facebook Profile">
+                                        <i class="fa-brands fa-facebook-f"></i>
+                                    </a>
+                                </div>
+
+                                <div class="pt-3 border-t border-amber-500/20 text-center">
+                                    <span class="text-xl font-signature font-bold text-amber-300/90 tracking-wider block drop-shadow-sm">
+                                        The Vision Architect
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            editProfileModal() {
+                const u = this.currentUser;
+                const modalHtml = `
+                    <div id="modalBackdrop" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                        <div class="bg-brand-cardBg border border-brand-border rounded-2xl p-5 w-full max-w-sm space-y-3">
+                            <h3 class="font-bold text-brand-orange text-base">প্রোফাইল এডিট করুন</h3>
+                            <form onsubmit="event.preventDefault(); window.appInstance.saveProfile(this)">
+                                <div class="space-y-2 text-xs">
+                                    <div>
+                                        <label class="text-gray-400 block mb-0.5">নাম</label>
+                                        <input type="text" name="name" value="${u.name || ''}" required class="w-full bg-black border border-gray-700 p-2 rounded-lg text-white focus:border-brand-orange focus:outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="text-gray-400 block mb-0.5">ফোন নম্বর (Login ID)</label>
+                                        <input type="text" name="phone" value="${u.phone || ''}" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-black border border-gray-700 p-2 rounded-lg text-white focus:border-brand-orange focus:outline-none">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="text-gray-400 block mb-0.5">ব্যাচ</label>
+                                            <input type="text" name="batch" value="${u.batch || ''}" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-black border border-gray-700 p-2 rounded-lg text-white focus:border-brand-orange focus:outline-none">
+                                        </div>
+                                        <div>
+                                            <label class="text-gray-400 block mb-0.5">রোল</label>
+                                            <input type="text" name="roll" value="${u.roll || ''}" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-black border border-gray-700 p-2 rounded-lg text-white focus:border-brand-orange focus:outline-none">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="text-gray-400 block mb-0.5">ফ্লোর (Floor)</label>
+                                            <input type="text" name="floor" value="${u.floor || ''}" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-black border border-gray-700 p-2 rounded-lg text-white focus:border-brand-orange focus:outline-none">
+                                        </div>
+                                        <div>
+                                            <label class="text-gray-400 block mb-0.5">রুম (Room)</label>
+                                            <input type="text" name="room" value="${u.room || ''}" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-black border border-gray-700 p-2 rounded-lg text-white focus:border-brand-orange focus:outline-none">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-gray-400 block mb-0.5">ফেসবুক লিংক</label>
+                                        <input type="url" name="fb" value="${u.fb || ''}" class="w-full bg-black border border-gray-700 p-2 rounded-lg text-white focus:border-brand-orange focus:outline-none">
+                                    </div>
+                                </div>
+                                <div class="flex gap-2 mt-4">
+                                    <button type="button" onclick="window.appInstance.closeModal()" class="w-1/3 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs">বাতিল</button>
+                                    <button type="submit" class="w-2/3 py-2 bg-brand-orange text-black font-bold rounded-lg text-xs">সেভ</button>
+                                </div>
+                            </form>
+
+                            ${!u.isSecretAdmin ? `
+                                <div class="pt-2 border-t border-gray-800">
+                                    <button onclick="window.appInstance.deleteSelfAccountModal()" class="w-full py-2 bg-red-950/60 border border-red-800/80 text-red-300 hover:bg-red-900 rounded-lg text-xs font-semibold transition flex items-center justify-center">
+                                        নিজের একাউন্ট ডিলিট করুন
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+            }
+
+            saveProfile(form) {
+                const numRegex = /^[0-9]+$/;
+                if (!numRegex.test(form.batch.value) || !numRegex.test(form.roll.value) || !numRegex.test(form.floor.value) || !numRegex.test(form.room.value)) {
+                    this.showToast("ব্যাচ, রোল, ফ্লোর এবং রুম নম্বর শুধুমাত্র ইংরেজী সংখ্যায় লিখুন!");
+                    return;
+                }
+
+                const newPhone = form.phone.value.trim();
+                if (this.db.users.some(u => u.phone === newPhone && u.id !== this.currentUser.id)) {
+                    this.showToast("এই ফোন নম্বর দিয়ে ইতিমধ্যে অন্য একটি একাউন্ট রয়েছে!");
+                    return;
+                }
+
+                this.currentUser.name = form.name.value.trim();
+                this.currentUser.phone = newPhone;
+                this.currentUser.batch = parseInt(form.batch.value);
+                this.currentUser.roll = parseInt(form.roll.value);
+                this.currentUser.floor = parseInt(form.floor.value);
+                this.currentUser.room = parseInt(form.room.value);
+                this.currentUser.fb = form.fb.value.trim();
+
+                const index = this.db.users.findIndex(u => u.id === this.currentUser.id);
+                if (index !== -1) {
+                    this.db.users[index] = { ...this.currentUser };
+                }
+
+                this.saveData();
+                sessionStorage.setItem("NMC_SESSION_USER", JSON.stringify(this.currentUser));
+                this.closeModal();
+                this.showToast("প্রোফাইল আপডেট হয়েছে!");
+                this.renderApp();
+            }
+
+            deleteSelfAccountModal() {
+                const confirmHtml = `
+                    <div id="confirmModalBackdrop" class="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4">
+                        <div class="bg-brand-cardBg border border-red-600/50 rounded-2xl p-5 w-full max-w-sm space-y-3 text-center">
+                            <i class="fa-solid fa-triangle-exclamation text-4xl text-red-500 mb-1"></i>
+                            <h3 class="font-bold text-white text-base">একাউন্ট মুছে ফেলবেন?</h3>
+                            <p class="text-xs text-gray-300 leading-relaxed">আপনি কি নিশ্চিত যে আপনার একাউন্ট ও মেস সংক্রান্ত সমস্ত মিল ডাটা স্থায়ীভাবে ডিলিট করতে চান? এই প্রক্রিয়াটি আর ফিরিয়ে আনা যাবে না।</p>
+                            <div class="flex gap-2 pt-2">
+                                <button onclick="document.getElementById('confirmModalBackdrop').remove()" class="w-1/2 py-2 bg-gray-800 text-gray-300 rounded-xl text-xs font-semibold">বাতিল</button>
+                                <button onclick="window.appInstance.processSelfAccountDeletion()" class="w-1/2 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs transition">হ্যাঁ, ডিলিট করুন</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', confirmHtml);
+            }
+
+            processSelfAccountDeletion() {
+                const userId = this.currentUser.id;
+                this.db.users = this.db.users.filter(u => u.id !== userId);
+                if (this.db.meals[userId]) {
+                    delete this.db.meals[userId];
+                }
+                this.saveData();
+
+                const confirmModal = document.getElementById('confirmModalBackdrop');
+                if (confirmModal) confirmModal.remove();
+
+                this.closeModal();
+                this.showToast("আপনার একাউন্টটি স্থায়ীভাবে ডিলিট করা হয়েছে!");
+                this.logout();
+            }
+
+            deleteBatchModal() {
+                const batches = [...new Set(this.db.users.map(u => u.batch))].sort((a,b) => b - a);
+
+                if (batches.length === 0) {
+                    this.showToast("কোনো মেম্বার বা ব্যাচ সিস্টেমে রেজিস্টার্ড নেই!");
+                    return;
+                }
+
+                const modalHtml = `
+                    <div id="modalBackdrop" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                        <div class="bg-brand-cardBg border border-red-600/40 rounded-2xl p-5 w-full max-w-sm space-y-3">
+                            <h3 class="font-bold text-red-400 text-base flex items-center gap-2">
+                                <i class="fa-solid fa-folder-minus"></i> ব্যাচ ডিলিট প্যানেল
+                            </h3>
+                            <p class="text-xs text-gray-300">নির্দিষ্ট ব্যাচ সিলেক্ট করলে সেই ব্যাচের সকল মেম্বারের অ্যাকাউন্ট ও ডেটা স্থায়ীভাবে মুছে যাবে।</p>
+
+                            <div class="space-y-3 text-xs pt-1">
+                                <div>
+                                    <label class="text-gray-300 block mb-1 font-semibold">ব্যাচ সিলেক্ট করুন</label>
+                                    <select id="deleteBatchTarget" class="w-full bg-black border border-gray-700 p-2.5 rounded-lg text-white focus:border-red-500 focus:outline-none">
+                                        ${batches.map(b => `<option value="${b}">ব্যাচ ${b}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-2 mt-4">
+                                <button onclick="window.appInstance.closeModal()" class="w-1/2 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs">বাতিল</button>
+                                <button onclick="window.appInstance.confirmBatchDeletion()" class="w-1/2 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-xs transition">ডিলিট করুন</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+            }
+
+            confirmBatchDeletion() {
+                const targetBatch = parseInt(document.getElementById('deleteBatchTarget').value);
+                const batchUsers = this.db.users.filter(u => u.batch === targetBatch);
+
+                if (batchUsers.length === 0) {
+                    this.showToast("এই ব্যাচে কোনো মেম্বার রেজিস্টার্ড নেই!");
+                    return;
+                }
+
+                const confirmHtml = `
+                    <div id="confirmBatchModal" class="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4">
+                        <div class="bg-brand-cardBg border border-red-600/60 rounded-2xl p-5 w-full max-w-sm space-y-3 text-center">
+                            <i class="fa-solid fa-triangle-exclamation text-4xl text-red-500 mb-1"></i>
+                            <h3 class="font-bold text-white text-base">ব্যাচ ${targetBatch} এর সকল ডাটা ডিলিট?</h3>
+                            <p class="text-xs text-gray-300 leading-relaxed">আপনি কি নিশ্চিত যে <strong>ব্যাচ ${targetBatch}</strong>-এর মোট <strong>${batchUsers.length} জন</strong> মেম্বারের সম্পূর্ণ প্রোফাইল ও মিল তথ্য মুছে ফেলবেন?</p>
+                            <div class="flex gap-2 pt-2">
+                                <button onclick="document.getElementById('confirmBatchModal').remove()" class="w-1/2 py-2 bg-gray-800 text-gray-300 rounded-xl text-xs font-semibold">বাতিল</button>
+                                <button onclick="window.appInstance.processBatchDeletion(${targetBatch})" class="w-1/2 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs transition">হ্যাঁ, স্থায়ীভাবে মুছুন</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', confirmHtml);
+            }
+
+            processBatchDeletion(batchNumber) {
+                const usersToRemove = this.db.users.filter(u => u.batch === batchNumber);
+
+                usersToRemove.forEach(u => {
+                    if (this.db.meals[u.id]) {
+                        delete this.db.meals[u.id];
+                    }
+                });
+
+                this.db.users = this.db.users.filter(u => u.batch !== batchNumber);
+                this.saveData();
+
+                const confirmModal = document.getElementById('confirmBatchModal');
+                if (confirmModal) confirmModal.remove();
+
+                this.closeModal();
+                this.showToast(`ব্যাচ ${batchNumber}-এর সকল মেম্বারের অ্যাকাউন্ট মুছে ফেলা হয়েছে!`);
+
+                if (this.currentUser && this.currentUser.batch === batchNumber) {
+                    this.logout();
+                } else {
+                    this.renderApp();
+                }
+            }
+
+            editUserMealModal(targetUserId) {
+                const target = this.db.users.find(u => u.id === targetUserId);
+                const m = this.db.meals[targetUserId] || { firstHalf: false, secondHalf: false, feast: false };
+
+                const isFull = m.firstHalf && m.secondHalf && m.feast;
+
+                const modalHtml = `
+                    <div id="modalBackdrop" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                        <div class="bg-brand-cardBg border border-brand-border rounded-2xl p-5 w-full max-w-sm space-y-3">
+                            <h3 class="font-bold text-brand-orange text-base">${target.name} - মিল ওভাররাইড</h3>
+                            <div class="space-y-3 text-xs">
+                                <label class="flex justify-between items-center bg-brand-orange/10 p-2.5 rounded-lg border border-brand-orange/40 font-semibold text-brand-orange">
+                                    <span>Full Meal (All ON)</span>
+                                    <input type="checkbox" id="mFull" ${isFull ? 'checked' : ''} onchange="window.appInstance.toggleModalFullMeal(this.checked)" class="accent-brand-orange">
+                                </label>
+                                <label class="flex justify-between items-center bg-black p-2 rounded-lg border border-gray-800">
+                                    <span>1st Half Meal</span>
+                                    <input type="checkbox" id="mFirst" ${m.firstHalf ? 'checked' : ''} onchange="window.appInstance.checkModalFullMealState()" class="accent-brand-orange">
+                                </label>
+                                <label class="flex justify-between items-center bg-black p-2 rounded-lg border border-gray-800">
+                                    <span>2nd Half Meal</span>
+                                    <input type="checkbox" id="mSecond" ${m.secondHalf ? 'checked' : ''} onchange="window.appInstance.checkModalFullMealState()" class="accent-brand-orange">
+                                </label>
+                                <label class="flex justify-between items-center bg-black p-2 rounded-lg border border-gray-800">
+                                    <span>Feast</span>
+                                    <input type="checkbox" id="mFeast" ${m.feast ? 'checked' : ''} onchange="window.appInstance.checkModalFullMealState()" class="accent-brand-orange">
+                                </label>
+                            </div>
+                            <div class="flex gap-2 mt-4">
+                                <button onclick="window.appInstance.closeModal()" class="w-1/2 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs">বাতিল</button>
+                                <button onclick="window.appInstance.saveUserMealOverride('${targetUserId}')" class="w-1/2 py-2 bg-brand-orange text-black font-bold rounded-lg text-xs">আপডেট</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+            }
+
+            toggleModalFullMeal(checked) {
+                document.getElementById('mFirst').checked = checked;
+                document.getElementById('mSecond').checked = checked;
+                document.getElementById('mFeast').checked = checked;
+            }
+
+            checkModalFullMealState() {
+                const f = document.getElementById('mFirst').checked;
+                const s = document.getElementById('mSecond').checked;
+                const feast = document.getElementById('mFeast').checked;
+                document.getElementById('mFull').checked = (f && s && feast);
+            }
+
+            saveUserMealOverride(userId) {
+                if (!this.db.meals[userId]) {
+                    this.db.meals[userId] = { firstHalf: false, secondHalf: false, feast: false, paidFirst: false, paidSecond: false, paidFeast: false, refundPaid: false, note: "" };
+                }
+                this.db.meals[userId].firstHalf = document.getElementById('mFirst').checked;
+                this.db.meals[userId].secondHalf = document.getElementById('mSecond').checked;
+                this.db.meals[userId].feast = document.getElementById('mFeast').checked;
+
+                this.saveData();
+                this.closeModal();
+                this.showToast("পেরিফেরাল ওভাররাইড সফল হয়েছে!");
+                this.renderMembersList();
+            }
+
+            setMealRatesModal() {
+                const rates = this.db.mealRates;
+                const modalHtml = `
+                    <div id="modalBackdrop" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                        <div class="bg-brand-cardBg border border-brand-border rounded-2xl p-5 w-full max-w-sm space-y-3">
+                            <h3 class="font-bold text-brand-orange text-base">মিল রেট সেটিং</h3>
+                            <div class="space-y-2 text-xs">
+                                <div>
+                                    <label class="text-gray-400 block">Full Meal Rate (৳)</label>
+                                    <input type="number" id="rFull" value="${rates.fullMeal}" class="w-full bg-black border border-gray-700 p-2 rounded-lg text-white">
+                                </div>
+                                <div>
+                                    <label class="text-gray-400 block">1st Half Rate (৳)</label>
+                                    <input type="number" id="rFirst" value="${rates.firstHalf}" class="w-full bg-black border border-gray-700 p-2 rounded-lg text-white">
+                                </div>
+                                <div>
+                                    <label class="text-gray-400 block">Only 2nd Half Rate (৳)</label>
+                                    <input type="number" id="rSecond" value="${rates.secondHalf}" class="w-full bg-black border border-gray-700 p-2 rounded-lg text-white">
+                                </div>
+                                <div>
+                                    <label class="text-gray-400 block">Only Feast Rate (৳)</label>
+                                    <input type="number" id="rStandaloneFeast" value="${rates.standaloneFeast}" class="w-full bg-black border border-gray-700 p-2 rounded-lg text-white">
+                                </div>
+                                <div>
+                                    <label class="text-gray-400 block">Feast Off Refund Amount (৳)</label>
+                                    <input type="number" id="rFeastDiscount" value="${rates.feastDiscount}" class="w-full bg-black border border-gray-700 p-2 rounded-lg text-white">
+                                </div>
+                            </div>
+                            <div class="flex gap-2 mt-4">
+                                <button onclick="window.appInstance.closeModal()" class="w-1/2 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs">বাতিল</button>
+                                <button onclick="window.appInstance.saveMealRates()" class="w-1/2 py-2 bg-brand-orange text-black font-bold rounded-lg text-xs">সেভ</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+            }
+
+            saveMealRates() {
+                this.db.mealRates.fullMeal = parseInt(document.getElementById('rFull').value);
+                this.db.mealRates.firstHalf = parseInt(document.getElementById('rFirst').value);
+                this.db.mealRates.secondHalf = parseInt(document.getElementById('rSecond').value);
+                this.db.mealRates.standaloneFeast = parseInt(document.getElementById('rStandaloneFeast').value);
+                this.db.mealRates.feastDiscount = parseInt(document.getElementById('rFeastDiscount').value);
+
+                this.saveData();
+                this.closeModal();
+                this.showToast("নতুন মিল রেট সেভ হয়েছে!");
+                this.renderApp();
+            }
+
+            handoverRoleModal(roleType) {
+                const roles = this.getRoles();
+                let targetGender = 'Male';
+
+                if (roleType === 'central') {
+                    targetGender = 'Male';
+                } else { // Peripheral transfer
+                    if (roles.isSecret) {
+                        targetGender = this.selectedHandoverGender || 'Female';
+                    } else {
+                        targetGender = this.currentUser.gender;
+                    }
+                }
+
+                const availableUsers = this.db.users.filter(u => u.gender === targetGender);
+                const batches = [...new Set(availableUsers.map(u => u.batch))].sort((a,b) => b - a);
+                const defaultBatch = batches.length > 0 ? batches[0] : null;
+
+                const modalHtml = `
+                    <div id="modalBackdrop" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                        <div class="bg-brand-cardBg border border-brand-border rounded-2xl p-5 w-full max-w-sm space-y-3">
+                            <h3 class="font-bold text-brand-orange text-base">${roleType === 'central' ? 'সেন্ট্রালশিপ' : 'পেরিফেরাল'} দায়িত্ব হ্যান্ডওভার</h3>
+                            
+                            ${roles.isSecret && roleType === 'peripheral' ? `
+                                <div>
+                                    <label class="text-gray-300 block mb-1 text-xs font-semibold">প্যানেল সিলেক্ট করুন (সুপার এডমিন)</label>
+                                    <div class="grid grid-cols-2 gap-2 text-xs">
+                                        <button type="button" onclick="window.appInstance.switchHandoverGender('Female', '${roleType}')" class="py-1.5 rounded-lg border font-semibold ${targetGender === 'Female' ? 'border-brand-orange bg-brand-orange/20 text-brand-orange' : 'border-gray-800 bg-black text-gray-400'}">মেয়েদের প্যানেল</button>
+                                        <button type="button" onclick="window.appInstance.switchHandoverGender('Male', '${roleType}')" class="py-1.5 rounded-lg border font-semibold ${targetGender === 'Male' ? 'border-brand-orange bg-brand-orange/20 text-brand-orange' : 'border-gray-800 bg-black text-gray-400'}">ছেলেদের প্যানেল</button>
+                                    </div>
+                                </div>
+                            ` : `<p class="text-xs text-gray-400">মেম্বার সিলেক্ট করে দায়িত্ব হস্তান্তর সম্পন্ন করুন (${targetGender === 'Male' ? 'ছেলে' : 'মেয়ে'} প্যানেল)</p>`}
+
+                            <div class="space-y-3 text-xs pt-1">
+                                ${roleType === 'peripheral' ? `
+                                    <div>
+                                        <label class="text-gray-300 block mb-1 font-semibold">১. কোন পেরিফেরাল পরিবর্তন করবেন?</label>
+                                        <select id="peripheralSlotSelect" class="w-full bg-black border border-gray-700 p-2.5 rounded-lg text-white focus:border-brand-orange focus:outline-none">
+                                            <option value="0">পেরিফেরাল ১</option>
+                                            <option value="1">পেরিফেরাল ২</option>
+                                        </select>
+                                    </div>
+                                ` : ''}
+
+                                <div>
+                                    <label class="text-gray-300 block mb-1 font-semibold">${roleType === 'peripheral' ? '২' : '১'}. ব্যাচ সিলেক্ট করুন</label>
+                                    <select id="handoverBatchSelect" onchange="window.appInstance.updateHandoverUserList('${roleType}', '${targetGender}')" class="w-full bg-black border border-gray-700 p-2.5 rounded-lg text-white focus:border-brand-orange focus:outline-none">
+                                        ${batches.map(b => `<option value="${b}">ব্যাচ ${b}</option>`).join('')}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="text-gray-300 block mb-1 font-semibold">${roleType === 'peripheral' ? '৩' : '২'}. নতুন দায়িত্বপ্রাপ্ত সদস্য সিলেক্ট করুন</label>
+                                    <select id="handoverTarget" class="w-full bg-black border border-gray-700 p-2.5 rounded-lg text-white focus:border-brand-orange focus:outline-none">
+                                        <!-- Dynamic -->
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-2 mt-4">
+                                <button onclick="window.appInstance.closeModal()" class="w-1/2 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs">বাতিল</button>
+                                <button onclick="window.appInstance.processHandover('${roleType}')" class="w-1/2 py-2 bg-brand-orange text-black font-bold rounded-lg text-xs">হ্যান্ডওভার করুন</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                if (defaultBatch) {
+                    this.updateHandoverUserList(roleType, targetGender);
+                }
+            }
+
+            switchHandoverGender(gender, roleType) {
+                this.selectedHandoverGender = gender;
+                this.closeModal();
+                this.handoverRoleModal(roleType);
+            }
+
+            updateHandoverUserList(roleType, targetGender) {
+                const batchVal = parseInt(document.getElementById('handoverBatchSelect').value);
+                const userSelect = document.getElementById('handoverTarget');
+
+                const filtered = this.db.users
+                    .filter(u => u.gender === targetGender && u.batch === batchVal)
+                    .sort((a,b) => a.roll - b.roll);
+
+                if (filtered.length === 0) {
+                    userSelect.innerHTML = `<option value="">কোনো রেজিস্টার্ড সদস্য পাওয়া যায়নি</option>`;
+                } else {
+                    userSelect.innerHTML = filtered.map(c => `
+                        <option value="${c.id}">${c.name} (রোল ${c.roll})</option>
+                    `).join('');
+                }
+            }
+
+            processHandover(roleType) {
+                const targetId = document.getElementById('handoverTarget').value;
+                if (!targetId) {
+                    this.showToast("অনুগ্রহ করে একজন সঠিক মেম্বার সিলেক্ট করুন!");
+                    return;
+                }
+
+                const targetUser = this.db.users.find(u => u.id === targetId);
+
+                if (roleType === 'central') {
+                    if (this.db.handoverCentral === targetId) {
+                        this.showToast("তিনি অলরেডি সেন্ট্রাল ভাইয়া হিসেবে নিয়োজিত আছেন! অন্য একজনকে ট্রান্সফার করুন।");
+                        return;
+                    }
+                    this.db.handoverCentral = targetId;
+                    this.db.centralUserId = targetId;
+                    this.db.currentCentralBatch = targetUser.batch;
+                } else {
+                    const slotIndex = parseInt(document.getElementById('peripheralSlotSelect').value || '0');
+                    const isMale = targetUser.gender === 'Male';
+                    
+                    let activeList = isMale ? (this.db.handoverPeripheralMale || []) : (this.db.handoverPeripheralFemale || []);
+                    
+                    if (activeList.length === 0) {
+                        const defaultBatch = isMale ? this.db.currentPeripheralBatchMale : this.db.currentPeripheralBatchFemale;
+                        const defaultPeripherals = this.db.users
+                            .filter(u => u.batch === defaultBatch && u.gender === targetUser.gender)
+                            .sort((a,b) => a.roll - b.roll)
+                            .slice(0, 2)
+                            .map(u => u.id);
+                        activeList = [...defaultPeripherals];
+                    }
+
+                    if (activeList.includes(targetId)) {
+                        this.showToast("তিনি অলরেডি পেরিফেরাল হিসেবে নিয়োজিত আছেন! অন্য একজনকে ট্রান্সফার করুন।");
+                        return;
+                    }
+
+                    // Replace the specific peripheral slot ensuring 2 peripherals always exist
+                    if (activeList.length < 2) {
+                        activeList[slotIndex] = targetId;
+                    } else {
+                        activeList[slotIndex] = targetId;
+                    }
+
+                    if (isMale) {
+                        this.db.handoverPeripheralMale = activeList;
+                        this.db.currentPeripheralBatchMale = targetUser.batch;
+                    } else {
+                        this.db.handoverPeripheralFemale = activeList;
+                        this.db.currentPeripheralBatchFemale = targetUser.batch;
+                    }
+                }
+
+                this.saveData();
+                this.closeModal();
+                this.showToast("দায়িত্ব সফলভাবে হ্যান্ডওভার করা হয়েছে!");
+                this.renderApp();
+            }
+
+            updateNotice() {
+                const inputEl = document.getElementById('noticeInput');
+                const val = inputEl ? inputEl.value.trim() : "";
+                this.db.centralNotices = val;
+                this.db.noticeUpdatedTime = Date.now();
+                this.saveData();
+
+                if (val) {
+                    this.showToast("সেন্ট্রাল নোটিশ সফলভাবে ব্রডকাস্ট করা হয়েছে!");
+                } else {
+                    this.showToast("নোটিশ মুছে ফেলা হয়েছে!");
+                }
+                this.renderApp();
+            }
+
+            toggleSystemSuspend() {
+                this.db.systemSuspended = !this.db.systemSuspended;
+                this.saveData();
+                this.showToast(this.db.systemSuspended ? "মেস সিস্টেম স্থগিত করা হয়েছে" : "মেস সিস্টেম পুনরায় চালু করা হয়েছে");
+                this.renderApp();
+            }
+
+            closeModal() {
+                const backdrop = document.getElementById('modalBackdrop');
+                if (backdrop) backdrop.remove();
+            }
+        }
+
+        // Initialize Global App
+        window.onload = function() {
+            window.appInstance = new MessApp();
+        };
+    </script>
+</body>
+</html>
+```
